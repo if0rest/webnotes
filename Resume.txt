@@ -1,0 +1,194 @@
+DATE_SUB(date,INTERVAL expr type) - функция, которая вычитывает указанный интервал от даты.
+
+Массив - это упорядоченная коллекция объектов с целочисленным индексом.
+
+При исп. SESSION мы отправляем COOKIE, но как ссылку на файл сессии.
+Плюсы:
+	- больше объем;
+	- запросы < размера (присылается только ИД сессии);
+	- маскируют данные (безопсность);
+Минусы:
+	- чуть > времени;
+	- заканчиваются при закрытии браузера;
+Инициализация сессии:
+	session_start();	// запустили сессию, теперь можно работать с $_SESSION
+___________________________________________________________________
+
+SQL - это стандартный язык получения данных из БД и управление ею.
+
+SQL применяется для создания, извлечения, обновления и обработки данных в СУБД.
+
+Внешний ключ - это колонка в 1 таблице, кот. ссылается на ряд в другой.
+___________________________________________________________________
+
+CMS - это система, помогающая управлять созданием, публикацией и архивацией контента сайта.
+___________________________________________________________________
+
+ПОДКЛЮЧЕНИЕ К БД
+
+Старый способ:
+<?php
+	$mysqli = new mysqli('localhost', 'username', 'password', 'database');
+	$mysqli->query("SET NAMES 'utf-8'");
+	$mysqli->close();
+?>
+
+Современный способ:
+$db = new PDO('mysql:host=localhost;dbname=site', 'root', 'pass');
+$db->exec("SET NAMES UTF8");
+$query = $db->prepare("INSERT INTO table (name, phone) VALUES (:name, :phone)");
+// поскольку работаем с PDO, он сам заэкранирует var name и phone. Двоеточием мы создаем маски: сами данные не вставляем, а делаем для них дырки.
+$values = ['name' => $name, 'phone' => $phone];
+// 'дырка' => 'var со значением'
+$query->execute($values);
+___________________________________________________________________
+
+window.onload = function () {
+	document.getElementById("btnGet").onclick = function () {
+		var xhr = new XMLHttpRequest();		// Создание объекта для HTTP-запроса
+		xhr.open("GET", "http://site.ru/index.php", true);	// Настройка объекта для отправки асинхронного GET запроса
+
+		xhr.onreadystatechange = function () {
+			if (xhr.readyState == 4 && xhr.status == 200) {		// если получен ответ и статус-код 200
+				document.getElementById("output").innerHTML += xhr.responseText;	// responseText - текст ответа полученного с сервера
+			}
+		}
+		xhr.send();	// Отправка асинх. запроса. Когда сервер ответит сработает событие onreadystatechange
+	}
+}
+Если мы делаем асинхронный запрос, нам обязательно установить обработчик на событие 'onreadystatechange'.
+
+___________________________________________________________________
+
+В JS есть 2 метода для прямой работы с атрибутами:
+1. Какой атрибут получить?
+	myElem.getAttribute('align');
+2. Установить атрибут и значение.
+	myElem.setAttribute('align', 'left');
+
+var myText = document.createTextNode('New давадыодаывдад');
+myElem.appendChild(myText);
+
+1. Создание элемента.
+2. Добавление его в дом
+	var newHeading = document.createElement('h1');
+	var newParagraph = document.createElement('p');
+	var h1Text = document.createTextNode('Did you know?');
+	var paraText = document.createTextNode('Califaronia produces...');
+	newHeading.appendChild(h1Text);
+	newHeading.appendChild(paraText);
+	document.getElementById('trivia').appendChild(newHeading);
+	document.getElementById('trivia').appendChild(newParagraph)
+Для большей гибкости есть:
+	parent.insertBefore(newElement, existingElement);
+
+
+Создание конструкторов:
+	function Player(n,s,r) {
+		this.name = n;
+		this.score = s;
+		this.rank = r;
+	}
+	var fred = new Player('Fred', 20000, 5);
+У каждого {} JS, а функция Player тоже {}, есть свойство 'prototype'.
+Используя это свойство мы можем привязывать свойства и методы к конструктору Player, делая их доступными для любого объекта, созданного с помощью new.
+*** Смотреть "13-4. Прототипы объектов"
+
+___________________________________________________________________
+
+AJAX и JQUERY. Правила создания своих модулей.
+$.ajaxSetup() - установка глобальных настроек для запросов $.ajax.
+$.ajax() - возвращает объект XMLHttpRequest. В качестве аргумента функции $.ajax() передается {}, состоящий из пар ключ-значение, кот. исп. для инициалиации и управления запросом.
+$.load() - загружает HTML из удаленного файла и встраивает в DOM.
+
+$.ajax({
+	// адрес запроса
+	url: 'test.html',
+	// тип запроса
+	type: 'GET',
+	// тип ответа со стороны сервера
+	dataType: 'script',
+	// данные, кот. будут отправляться на сервер с запросом
+	success: function(data){
+		$('p:first').append(data);
+	}
+});
+
+$.$.ajax({
+	url: 'HandlerData.ashx',
+	type: 'POST',
+	data: {param1: 'value1'},
+	success: function(data){}
+})
+
+
+div1.innerHTML += toElement[0].childNodes[0].nodeValue;
+
+$.ajax() - на объекте $ вызываем метод ajax().
+
+var data = JSON.stringify(object);	// сериализация JS-объекта в JSON
+var obj = JSON.parse(data);	// сериализация JSON в JS-объект
+
+join(', ') - преобразует все элементы [] в строку и объединяет их. Переданный аргумент выступает сепаратором.
+concat() - дополняет массив новыми элементами или склеивает 2 [].
+slice(start, end) - возвращает обрезанный массив, обрубает лишнее.
+splice(start, count) - вырезает из [] кусок, изменняя исходный и создавая новый из вырезанных элементов.
+splice(start, 0, elem1, elem2...) - вставит новые элементы.
+
+___________________________________________________________________
+
+ЦИКЛЫ
+
+1. while
+	$i = 0;
+	while($i <= 6) {
+		$i++;
+		echo '<li><a href="#">Пункт'.' '.$i.'</a></li>';
+	}
+
+2. for
+	for ($i = 1, $count = count($categories); $i <= $count; $i++) {		// + можно добавить шаг ,$count++
+		echo '<li><a href="#">'.'Пункт '.$i.'</a></li>';
+	}
+
+3. foreach($массив_для_обхода as $var) - специализированный цикл для массивов в PHP.
+	foreach ($categories as $category) {	// каждый элемент categories[] заносится в $category
+	echo '<li><a href="#">Пункт</a></li>';
+	}
+---------------------------------------------
+	foreach ($categories as $category) {
+	echo '<li><a href="/category.php?id='.$category["category_id"].'">'.$category["category_title"].'</a></li>'; }
+Компактный синтаксис:
+	<?php foreach ($categories as $category): ?>
+		<li><a href="/category.php?id='<?= $category["category_id"] ?>'"><?= $category["category_title"]?></a></li>
+	<?php endforeach; ?>
+___________________________________________________________________
+
+ПОДКЛЮЧЕНИЕ К БД И ПЕРВЫЙ SQL-ЗАПРОС
+
+'database.php' - файл, кот. хотим подключить.
+	$link = mysqli_connect('localhost', 'root', '', 'my_first_blog');
+		if (!mysqli_connect_errno()) {	// проверка на ошибки
+		echo 'Ошибка подключения к БД ('.mysqli_connect_errno().')';
+	}
+
+'index.php' - файл, к кот. подключаемся.
+	<?php
+		require_once 'app/include/database.php';	// подключаем внешний файл
+	?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

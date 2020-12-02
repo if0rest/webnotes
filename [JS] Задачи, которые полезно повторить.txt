@@ -1,0 +1,460 @@
+Задачи, которые полезно повторить
+=======================================
+Меню с таймером для анимации - 278
+Создайте дерево из объекта
+Карусель
+Подсказка при замедлении над элементом
+Расставить супергероев по полю
+=======================================
+
+
+=======================================================================
+=======================================================================
+Критерии социального роста:
+1. Есть работа и стабильный заработок.
+2. Можешь позволить посещение публичных мест (кино, рестораны, фитнес-клубы и проч).
+3. Не испытываешь ограничений при выборе покупки.
+4. Имеешь приятный круг общения.
+5. Востребован у противоположного пола.
+6. Можешь позволить поездки за границу.
+
+.htaccess - файл серверных инструкций.
+
+Наличие SSL-сертификата позволяет передавать данные по протоколу HTTPS, который обеспечивает шифрование передаваемых данных. Даже в случае перехвата, их будет крайне сложно расшифровать и как-то использовать.
+*
+Используется протокол HTTP, и все передаваемые данные не шифруются. Проблема безопасности осообенно актуальна на сайтах, имеющих форму обратной связи, где возможна передача конфиденциальной информации.
+
+Плагины расширяют функционал приложения.
+
+Таксономия - система или схема классификации чего-либо. "Категории" и "теги" - 2 разных типа Т.
+
+"... Защищенный протокол HTTPS и подключить себе SSL-сертификат можно на хостинге. Можно за бесплатно подключить самый простой SSL-сертификат, можно за деньги - не самый простой, и тогда будет показываться значек 'Надежный' перед сайтом".
+
+Создать лендинг на WP можно, исп. плагин WPPage (платный).
+
+DNS-сервер хранит внутренние таблицы соответствия доменного имени IP-адресу.
+
+Абстрактные классы могут расширять только другие абстрактные классы.
+Абстрактные классы - классы, содержащие хотя бы 1 абстрактный метод.
+Абстрактный метод - это функция без тела: только модификатор доступа и имя.
+
+SSL-сертификат позволяет передавать данные в зашифрованном виде.
+=======================================================================
+=======================================================================
+
+
+Значение NaN обозначает ошибку и является результатом числовой операции, если она некорректна.
+
+null присваивается, если мы хотим указать, что значение переменной неизвестно.
+   var age = null; // возраст неизвестен
+Значение undefined означает «переменная не присвоена».
+   var x;
+   alert( x ); // undefined
+
+Также: значения null и undefined при == равны друг другу и не равны ничему ещё. А при операторах больше/меньше происходит приведение
+null к 0 , а undefined к NaN .
+
+Параметры Ф копируются в ее локальные переменные.
+
+Функция в JavaScript является обычным значением. Её можно создать в любом месте кода и присвоить в переменную, вот так:
+   var sum = function(a, b) {
+      var result = a + b;
+      return result;
+   }
+   alert( sum(1, 2) ); // 3
+Функции, объявленные через Function Declaration, отличаются от Function Expression тем, что интерпретатор создаёт их при входе в область видимости
+(в начале выполнения скрипта), так что они работают до объявления. Обычно это удобно, но может быть проблемой, если нужно объявить функцию в зависимости от условия. В этом случае, а также в других ситуациях, когда хочется создать функцию «здесь и сейчас», используют Function Expression.
+
+До выполнения первой строчки кода функции, на стадии инициализации, интерпретатор создает пустой объект LE и заполняет его: ключами становятся параметры и локальные переменные функции, а их значениями соответственно - переданные аргументы и undefined {param: arg, local: undefined}.
+Во время выполнения происходит присвоение локальным переменным нового значения взамен undefined.
+
+Функция хранит ссылку на внешний LE в спец. внутреннем свойстве [[Scope]]. При создании функция получает скрытое свойство [[Scope]], которое ссылается на лексическое окружение, в кот. она была создана.
+
+this в контексте функции ссылается на внешний объект. Если this не находится внутри к-либо функции, он ссылается на глобальный объект window.
+
+Если требуется преобразование {} в число, исп. метод valueOf(), если к строке - toString(). По умолчанию исп. пользовательская реализация toString(), в случае отсутствия - стандартный с [object Object].
+
+У каждого свойства объекта (метод тоже свойство) есть свой дескриптор, обладающий опр. набором свойств: {value, writable, configurable, enumerable, get, set}. У каждого свойства есть геттер и сеттер стандартной реализации, которые можно изменить вручную.
+
+По умолчанию геттер возвращает value, модифицированный геттер - может вернуть что-угодно.
+// есть объект
+   var obj = {test: 5};
+// получаем его дескриптор
+   var desc = Object.getOwnPropertyDescriptor(obj, 'test');
+// удаляем следующие свойства
+   delete descriptor.value;
+   delete descriptor.writable;
+// переопределяем стандартный геттер
+   descriptor.get = function() { return 'Переопределяем стандартный геттер'; }
+// удаляем свойство test (и его дескриптор) оригинального объекта
+// если не удалить ‐ defineProperty объединит старый дескриптор с новым
+   delete obj.test;
+// и пересоздаем свойство, использую модифицированный дескриптор
+   Object.defineProperty(obj, 'test', descriptor);
+// проверяем
+   console.log(obj.test);  // Переопределяем стандартный геттер
+
+Фабричный метод - это статический метод, который служит для создания новых объектов (поэтому и "фабричный").
+Фабричный статический метод: "статический" - потому что принадлежит функции-конструктору, "фабричный" - потому что применяется при создании {}.
+
+f = f.bind( {name: "Вася"} ).bind( {name: "Петя"} );
+Первый вызов f.bind(..Вася..) возвращает «обёртку», которая устанавливает контекст для f и передаёт вызов f .
+Следующий вызов bind будет устанавливать контекст уже для этой обёртки. Это ни на что не повлияет.
+
+f.bind(obj) => function() { return f.apply(obj, arguments) }
+// Первый вызов f.bind(..Вася..) возвращает «обёртку», которая устанавливает контекст для f и передаёт вызов f
+
+ПРОВЕРКА ТИПА
+• typeof - примитивы: number, string, boolean, undefined (кроме null, который Object)
+• Получение внутреннего свойства [[Class]] через {}.toString.call(obj) - поможет отличить Object, Array, Date
+• instanceof (user instanceof User) - проверяет родство объекта и конструктора.
+
+• Неактуальный setInterval нуждается в очистке, чтобы освободить память, setTimeout - нет.
+• При setInterval накопления вызовов не происходит: если долгая функция перекрыла n-ное запланированное число вызовов setInterval, то последний будет вызван лишь 1 раз - таковва логика setInterval.
+"За время выполнения f может пройти время, на которое запланированы несколько вызовов setInterval, но в этом случае остается только один, т.е. накопления вызовов не происходит. Такова логика работы setInterval."
+• Ведь в setTimeout пауза 15 мс будет между шагами, а setInterval шагает равномерно, каждые 15 мс. Получается чаще.
+
+В ООП конструкторы часто называют "классами". Класс мб написан в функциональном или прототипном стиле.
+
+var obj = {...};
+function Constructor() {...};
+Constructor.prototype = obj;  // прототипом мб только {}
+var constructor = new Constructor;
+alert(constructor.__proto__); // obj
+
+У каждой Ф есть свойство prototype = {constructor: имя_функции}. При создании объекта через new, в его прототип __proto__ записывается ссылка из prototype функции-конструктора. Прототип можно безвозвратно потерять, переопределив его.
+
+Прототип - это объект, содержащий свойства и методы, к которому будет направлен вызов при отсутствии искомых свойств/методов в цепочке объектов-экземпляров.
+
+getElementsByTagName является «живым поисковым запросом». Если не обратиться к его результатам, то поиска не произойдет вообще, т.е. runGet ничего по сути не ищет.
+
+DOM-деррево состоит из узлов. Узел - это тег, текст, коммент. Разные узлы - объекты различных классов, поэтому их свойства могут отличаться. Есть и кое-что общее за счет наследования.
+
+• tagName есть только у элементов Element, a nodeName - у всех узлов Node, т.е. оно универсально.
+• innerHTML - содержимое элемента, позволяет получить HTML-содержимое элемента в виде строки. В него можно читать и писать. innerHTML есть только у узлов-элементов, содержимое др. узлов (текстовых, комментов) доступно на чтение/запись через data (почти аналогичное nodeValue исп. не будем).
+• textContent - содержит только текст внутри элемента, включая переносы строк и пробелы, за вычетом всех тегов. Иными словами, elem.textContent возвращает конкатенацию всех текстовых узлов внутри elem. Гораздо полезнее возможность записать текст в элемент, причем именно как текст.
+   document.body.textContent = '<b>Винни-Пух</b>';    // Винни-Пух
+Вряд ли мы хотим, чтобы посетители вставляли в наш сайт проивзольный HTML-код, и присваивание через textContent - 1 из способов защититься.
+• Свойство value - значение для input, select, textarea.
+
+Полифилы
+•  Для методов
+   if (Element.prototype.closest) {
+      Element.prototype.closest = function(css) {
+         var node = this;
+         while (node) {
+            if (node.matches(css)) return node;
+            node = node.parentElement;
+         }
+         return null;
+      }
+   }
+•  Для свойств
+   if (document.documentElement.textContent === undefined) {
+      Object.defineProperty(HTMLElement, 'textContent', {
+         get: function() { return this.innerText },
+         set: function(text) { this.innerText = text }
+      })
+   }
+
+DOM-узлы являются объектами JS.
+
+<a id="a" href="#"></a>
+<script>
+   a.href = '/';
+   alert( 'атрибут:' + a.getAttribute('href') );   // '/'
+   alert( 'свойство:' + a.href );                  // полный URL
+</script>
+Это потому, что атрибут может быть любым, а свойство href, в соответствии со спецификацией W3C, должно быть полной ссылкой. Стало быть, если мы хотим именно то, что в HTML, то нужно обращаться через атрибут.
+
+function isObjectEmpty(obj) {
+   for (var key in obj) return false;
+   return true;
+}
+
+elem.style.color - узел (объект) elem имеет свойство style, которое ссылается на объект, содержащий набор свойств, одно из кот. - color.
+
+• window.getComputedStyle(elem [, pseudo]), несмотря на название, возвращает окончательное значение (в px), а не вычисленное ('margin: auto').
+   let computedStyle = getComputedStyle(document.body);
+   alert(computedStyle.marginTop);
+• getComputedStyle() требует полное свойство: marginTop, a не просто margin.
+
+
+• Свойство style – это объект, в котором CSS-свойства пишутся вотТакВот. Чтение и изменение его свойств – это, по сути, работа с компонентами атрибута style.
+• style.cssText – строка стилей для чтения или записи. Аналог полного атрибута style.
+
+• Метрики (offsetTop, clientWidth, ScrollTop и т.д.), в отличие от свойств CSS, содержат числа всегда в px и без единиц измерения на конце.
+• Метрики для невидимых элементов = 0. Координаты и метрики в JS устанавливаются только для видимых элементов.
+
+• offsetLeft/offsetTop = elem {position: absolute; left: ...; top: ...}. Это смещение елемента с position:relative относительно ближайшего родителя с position:absolute.
+• offsetWidth/Height - внешние ширина и высота элемента, включая border.
+• scroller съедает ширину контентной области.
+• clientLeft/Top - ширина левой и верхней рамок.
+• clientWidth/Height - размер элемента внутри border + padding, но без скроллера.
+   clientWidth = contentWidth + (padding * 2) - scroller
+   или
+   clientWidth = offsetWidth - (border * 2 + scroller)
+• scrollWidth/Height - ширина/высота содержимого (полная внутренняя метрика), включая прокручиваемую область (которую не видно).
+   scrollWidth/Height = clientWidth/Height  + scrollLeft/Top
+• scrollLeft/Top - ширина/высота прокрученной части документа, считается от верхнего левого угла. Единсттвенная пара свойств-метрик, доступных для записи.
+
+return !elem.offsetWidth && !elem.offsetHeight;
+
+scroller = elem.offsetWidth - elem.clientWidth - elem.clientLeft
+
+#elem {
+   width: 200px;
+   height: 150px;
+   padding: 20px;
+   overflow: auto;
+}
+• console.log(elem.offsetWidth);               // 240
+   // максимальная ширина: width + padding + border
+• console.log(elem.clientWidth);               // 223
+   // width + padding - scroller
+• console.log(getComputedStyle(elem).width);   // '183px'
+   // width - scroller
+   // не включает padding
+* масштабирование документа не влияет offsetWidth.
+
+
+clientWidth - контент + padding, а width - зона внутри padding.
+clientWidth - внутренняя видимая область элемента, включая padding, а CSS-ширина width при стандартном значении box-sizing соответствует зоне внутри padding.
+clientWidth кросс-браузерно, и всегда обозначает размер за вычетом прокрутки, т.е. реально доступный для содержимого.
+
+Получить текущую прокрутку у обычного элемента - scrollLeft/Top, у страницы - page(X/Y)Offset.
+Кросс-браузерный вариант:
+   var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+Чтобы ЗАПРЕТИТЬ ПРОКРУТКУ СТРАНИЦЫ, достаточно поставить document.body.style.overflow = "hidden". При этом страница замрёт в текущем положении. Вместо document.body может быть любой элемент, прокрутку которого необходимо запретить. Недостатком этого способа является то, что сама полоса прокрутки исчезает. Если она занимала некоторую ширину, то теперь эта ширина освободится, и содержимое страницы расширится, текст «прыгнет», заняв освободившееся место. Это может быть не очень красиво, но легко обходится, если вычислить размер прокрутки и добавить такой же по размеру padding.
+
+Размеры:
+• Для получения размеров видимой части окна: document.documentElement.clientWidth/Height.
+• Для получения размеров страницы с учётом прокрутки:
+   var scrollHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight,
+      document.body.offsetHeight, document.documentElement.offsetHeight,
+      document.body.clientHeight, document.documentElement.clientHeight
+   );
+Прокрутка окна:
+• Прокрутку окна можно получить как window.pageYOffset (для горизонтальной – window.pageXOffset ) везде, кроме IE8-.
+На всякий случай – вот самый кросс‑браузерный способ, учитывающий IE7- в том числе:
+   var html = document.documentElement, body = document.body;
+   var scrollTop = html.scrollTop || body && body.scrollTop || 0;
+   scrollTop -= html.clientTop; // в IE7‐ <html> смещён относительно (0,0)
+   alert( "Текущая прокрутка: " + scrollTop );
+Установить прокрутку можно при помощи специальных методов:
+• window.scrollTo(pageX,pageY) – абсолютные координаты,
+• window.scrollBy(x,y) – прокрутить относительно текущего места.
+• elem.scrollIntoView(top) – прокрутить, чтобы элемент elem стал виден.
+
+getBoundingClientRect() - возвращает координаты элемента, под которыми понимаются размеры «воображаемого прямоугольника», который охватывает весь элемент. Координаты возвращаются в виде объекта со свойствами:top, left, right, bottom. Координатная система относительно окна браузера начинается в левом-верхнем углу текущей видимой области окна. Координаты высчитываются относительно от границ текущей видимой области.
+
+К сожалению, готовой функции для получения координат элемента относительно страницы нет. Но её легко написать, т.к. эти две системы координат жёстко связаны: pageY = clientY + текущая вертикальная прокрутка. getCoords(elem) будет брать результат elem.getBoundingClientRect() и прибавлять
+текущую прокрутку документа.
+   function getCoords(elem) {    // кроме IE8‐
+     var box = elem.getBoundingClientRect();
+     return {
+       top: box.top + pageYOffset,
+       left: box.left + pageXOffset
+     };
+   }
+
+У любой точки в браузере есть координаты:
+1. Относительно окна window – elem.getBoundingClientRect().
+2. Относительно документа document – добавляем прокрутку.
+3. Относительно экрана screen – можно узнать координаты браузера, но не элемента.
+
+* Вспомогательная функция для координат относительно документа
+function getCoords(elem) {
+   var box = elem.getBoundingClientRect();
+
+   var body = document.body;
+   var docEl = document.documentElement;
+
+   var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
+   var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
+
+   var clientTop = docEl.clientTop || body.clientTop || 0;
+   var clientLeft = docEl.clientLeft || body.clientLeft || 0;
+
+   var top = box.top + scrollTop - clientTop;
+   var left = box.left + scrollLeft - clientLeft;
+
+   return {
+      top: top,
+      left: left
+   };
+}
+
+Можно назначать обработчик, используя свойство DOM-объекта on<событие>.
+   Вариант с атрибутом onclick:
+      <input ... onclick="alert('Привет!')">
+   Вариант со свойством элемента:
+      <input ...)">
+      <script>
+         elem.onclick = function() { alert('Привет!') }
+      </script>
+Если обработчик задан через атрибут, то браузер читает HTML-разметку, создает новую функцию из содержимого атрибута и записывает в свойство onclick. Т.е. атрибут => свойство {}. Обработчик хранится именно в DOM-свойстве, а атрибут - лишь 1 из способов его инициализации.
+
+<input onclick="myFunc()">
+но
+<script>
+   elem.onclick = myFunc;
+   elem.onclick = function() {
+      muFunc();
+   }
+</script>
+
+button.onclick = sayThanks;
+Если добавить скобки, то sayThanks() - будет уже результат выполнения Ф, а т.к. в ней нет return, то в onclick попадет undefined.
+
+При создании обработчика из атрибута, браузер автоматически создает Ф из его содержимого, поэтому:
+   <button id="button" onclick="sayThanks()">
+аналогично
+   button.onclick = function() { sayThanks() }
+
+Можно одновременно назначать обработчики и через DOM-свойство и через addEventListener.
+
+ul {
+   height: 130px;
+   width: 9999px;
+   margin: 0;
+   padding: 0;
+   list-style: none;
+   /* убрать между inline-block li лишние пробелы, которые есть в HTML */
+   /* http://davidwalsh.name/remove-whitespace-inline-block */
+
+   font-size: 0;
+}
+
+Отличия от this (= event.currentTarget ):
+• event.target – это исходный элемент, на котором произошло событие, в процессе всплытия он неизменен.
+• this – это текущий элемент, до которого дошло всплытие, на нём сейчас выполняется обработчик.
+
+Прекращение всплытия
+• event.stopPropagation()
+Всплытие идёт прямо наверх. Обычно событие будет всплывать наверх и наверх, до элемента <html>, а затем до document, а иногда даже до window, вызывая все обработчики на своем пути. Но любой промежуточный обработчик может решить, что событие полностью обработано, и остановить всплытие. Для остановки всплытия нужно вызвать метод event.stopPropagation().
+• event.stopImmediatePropagation()
+Если у элемента есть несколько обработчиков на одно событие, то даже при прекращении всплытия все они будут выполнены. То есть, stopPropagation препятствует продвижению события дальше, но на текущем элементе все обработчики отработают. Для того, чтобы полностью остановить обработку, современные браузеры поддерживают метод event.stopImmediatePropagation(). Он не только предотвращает всплытие, но и останавливает обработку событий на текущем элементе.
+
+Отличие IE8-: Нет свойства event.currentTarget
+Обратим внимание, что при назначении обработчика через onсвойство у нас есть this , поэтому event.currentTarget , как правило, не нужно, а вот при назначении через attachEvent обработчик не получает this , так что текущий элемент, если нужен, можно будет взять лишь из замыкания.
+
+АЛГОРИТМ:
+• При наступлении события – элемент, на котором оно произошло, помечается как «целевой» ( event.target ).
+• Далее событие сначала двигается вниз от корня документа к event.target, по пути вызывая обработчики, поставленные через addEventListener(..., true) .
+• Далее событие двигается от event.target вверх к корню документа, по пути вызывая обработчики, поставленные через on* и addEventListener(..., false).
+Каждый обработчик имеет доступ к СВОЙСТВАМ СОБЫТИЯ:
+• event.target – самый глубокий элемент, на котором произошло событие.
+• event.currentTarget (= this ) – элемент, на котором в данный момент сработал обработчик (до которого «доплыло» событие).
+• event.eventPhase – на какой фазе он сработал (погружение =1, всплытие = 3).
+Любой обработчик может ОСТАНОВИТЬ СОБЫТИЕ вызовом event.stopPropagation(), но делать это не рекомендуется, так как в дальнейшем это событие может понадобиться, иногда для самых неожиданных вещей. В современной разработке стадия погружения используется очень редко.
+Метод event.stopImmediatePropagation() не только предотвращает всплытие, но и останавливает обработку событий на текущем элементе.
+
+<div id="menu">
+   <button data-action="save">Сохранить</button>
+   <button data-action="load">Загрузить</button>
+   <button data-action="search">Поиск</button>
+</div>
+<script>
+   let menu = document.getElementById('menu');
+//
+   function Menu(elem) {
+      this.save = function() {alert('Сохранить')};
+      this.load = function() {alert('Загрузить')};
+      this.search = function() {alert('Поиск')};
+//
+      var self = this;
+//
+      elem.onclick = function(e) {
+         let target = e.target,
+             action = target.getAttribute('data-action');
+         if (action) self[action]();
+      }
+   }
+   new Menu(menu);
+</script
+
+Немного озадачен. Сохранил узел в переменную, затем удалил узел из DOM, однако в переменной узел по-прежнему жив и хранит всю вложенность.
+
+ОТМЕНА ДЕЙСТВИЙ БРАУЗЕРА ПО УМОЛЧАНИЮ
+<a ... onclick="return false">
+   или
+<a ... onclick="event.preventDefault()">
+
+while (target != this) {
+   if (target.tagName == 'A') {
+      return handleLink(target.getAttribute('href'));
+   }
+   target = target.parentNode;
+}
+
+ПРЕДЗАГРУЗКА КАРТИНОК
+Для того, чтобы картинка загрузилась, достаточно создать новый элемент IMG и указать ему src, вот так:
+-------------------------------------------------
+   var imgs = thumbs.getElementsByTagName('img');
+   for (var i = 0; i < imgs.length; i++) {
+      var url = imgs[i].parentNode.href;
+
+      var img = document.createElement('img');
+      img.src = url;
+   }
+-------------------------------------------------
+Как только элемент создан и ему назначен src, браузер сам начинает скачивать файл картинки. При правильных настройках сервера как-то использовать этот элемент не обязательно – картинка уже закеширована.
+
+ЭМУЛЯЦИЯ toggle
+elem.hidden = !elem.hidden;
+node.style.display = node.style.display ? '' : 'none';
+
+let isClickOnTitle = (document.elementFromPoint(e.clientX, e.clientY) == titleWrapper);
+
+<script>
+   let tree = document.getElementById('tree');
+// ---------------------------
+   function isOverTitle(e, li) {
+      let titleWrapper = document.createElement('span');
+      let titleTextNode = li.firstChild;
+      li.insertBefore(titleWrapper, titleTextNode);
+      titleWrapper.appendChild(titleTextNode);
+//
+      let isClickOnTitle = (document.elementFromPoint(e.clientX, e.clientY) == titleWrapper);
+//
+      titleWrapper.removeChild(titleWrapper.firstChild);
+      li.replaceChild(titleTextNode, titleWrapper)
+
+      return isClickOnTitle;
+   }
+// ---------------------------
+   tree.onclick = function(e) {
+      let target = e.target;
+//
+      if (!isOverTitle(e, target)) return;
+//
+      let node = target.querySelector('ul');
+      if (!node) return;
+      node.style.display = node.style.display ? '' : 'none';
+   }
+</script>
+
+// расстояние от верхней границы окна до нижней границы документа
+// при прокручивании вниз это расстояние уменьшается
+// при pageYOffset = 0, doc.bottom = doc.clientHeight
+// docBottom - это doc.clientHeight + оставшийся pageYOffset
+var docBottom = document.documentElement.getBoundingClientRect().bottom;
+
+// scrollBy, если его не ограничить - может заскроллить за текущую границу документа обычно скроллим на 10px, но если расстояние от newBottom до docBottom меньше, то меньше:
+   var scrollY = Math.min(docBottom - newBottom, 10);
+// ошибки округления при полностью прокрученной странице могут привести к отрицательному scrollY, что будет означать прокрутку вверх. Поправим эту ошибку:
+   if (scrollY < 0) scrollY = 0;
+
+function startDrag(clientX, clientY) {
+// 1. Вычисляет смещение
+// 2. делает position:fixed
+// 3. вырезает-вставляет элемент в конец DOM
+// 4. вызывает moveAt()
+   shiftX = clientX - dragElement.getBoundingClientRect().left;
+   shiftY = clientY - dragElement.getBoundingClientRect().top;
+   dragElement.style.position = 'fixed';
+   document.body.appendChild(dragElement);
+   moveAt(clientX, clientY);
+}

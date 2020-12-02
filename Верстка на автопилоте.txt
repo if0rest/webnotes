@@ -1,0 +1,124 @@
+ПОЧЕМУ Я НЕ ИСПОЛЬЗУЮ FLEXBOX? (IE 10+)
+
+Какие задачи РЕШАЕТ flexbox:
+1. Сеточное раскладки: "Резинится, тянется, все переносится - адаптивность на высоте".
+2. Вертикальное позиционирование: "Как вертикально отцентрировать элемент".
+	flex-direction: row;
+	align-content: flex-start|flex-end|center|space-between|space-around|stretch;
+3. Горизонтальное позиционирование: "Когда мы тянем контент, к левому краю бьем, к правому, центрируем".
+	flex-direction: row;
+	justify-content: flex-start | flex-end | center | space-between | space-around | space-evenly
+4. Смена порядков блока: "Главная киллер-фича. Изначально такой порядок блоков, а на другой страница надо поменять".
+	order: <число>
+
+Чего НЕ МОЖЕТ flexbox:
+1. Корректный перенос элементов в сеточной раскладке.
+2. Pinterest-раскладка.
+
+ОЛДСКУЛЬНЫЕ РЕШЕНИЯ
+1. Горизонтальная навигация (обычная):
+	display: inline-block;
+2. Горизонтальная навигация (растянутая по ширине блока):
+	(см. в скринах)
+3. Вертикальное центрирование (line-height):
+	#parent {
+		height: 400px;
+		text-align: center;
+		line-height: 400px;
+	}
+	#child {
+		vertical-align: middle;
+		display: inline-block;
+		line-height: initial;
+	}
+Недостаток: мы фиксируем высоту parent.
+4. Вертикальное центрирование (:before):
+	#parent { text-align: center; }
+	#parent::before {
+		content: '';
+		height: 100%;
+		width: 0;
+		vertical-align: middle;
+		display: inline-block;
+	}
+	#child {
+		display: inline-block;
+		vertical-align: middle;
+	}
+"Многие верстальщики почему-то думают, что если зададут vertical-align для parent, то это автоматом отвертикалит внутренний контент. Нихрена подобного! Как оказалось, vertical-align работает только для элементов с display:inline|inline-block, именно для них самих и указывает ИМ, как ОНИ должны выравниваться относительно СВОИХ СОСЕДНИХ inline и inline-block элементов. Только так. Не КАК элемент должен выравниваться в parent', а КАК он должен выравниваться относительно своего инлайнового соседа".
+5. Вертикальное центрирвование (position: absolute):
+	#parent { position: relative; }
+	#child {
+		position: absolute;
+		top: 50%;
+		margin-top: -height/2;
+	}
+Недостаток: необходимо жестко задавать высоту child.
+6. Вертикальное центрирование (table-cell):
+	#parent-table {
+		display: table;
+		width: 100%;
+		/*height: 200px; text-align: center;*/
+	}
+	#parent {
+		display: table-cell;
+		vertical-align: middle;
+		width: 100%;
+	}
+	#child {
+		display: inline-block;
+	}
+Железный метод. Верстаки обожают. Нет привязки к величинам.
+7. Вертикальное центрирование (transform) [IE9+]:
+	#parent {
+		height: 100vh;
+		position: relative;
+	}
+	#child {
+		position: absolute;
+		top: 50%;
+		transform: translate(-50%);
+	}
+8. Сетки (inline-block):
+	<div class="wrapper">
+		<div class="list">
+			<div class="list__item"></div>
+			<div class="list__item list__item--size-s"></div>
+			<div class="list__item"></div>
+			<div class="list__item"></div>
+			<div class="list__item list__item--size-l"></div>
+			<div class="list__item"></div>
+			<div class="list__item list__item--size-s"></div>
+			<div class="list__item list__item--size-l"></div>
+		</div>
+	</div>
+	<style>
+		.wrapper {
+			width: 600px;
+			margin-left: auto;
+			margin-right: auto;
+			background: #ddd;
+		}
+		.list {
+			margin-left: -25px;
+			font-size: 0;
+		}
+		.list__item {
+			background: lightblue;
+			display: inline-block;
+			vertical-align: top;
+			margin-bottom: 20px;
+			width: 100px;
+			height: 100px;
+			margin-left: 25px;
+		}
+		.list__item--size-s {
+			height: 75px;
+		}
+		.list__item--size-l {
+			height: 130px;
+		}
+	</style>
+<!> Если блоку с незаданной шириной задать отрицательный margin-left, он растянется на указанное значение влево. Если Ш задана, блок сместиться, как положено.
+9. Сетки (float):
+Недостатки: float'ы обязательно должны иметь одинаковую высоту, иначе начнут друг за друга цепляться. Имеет смысл исп., когда есть гарантия, что все карточки будут одного размера.

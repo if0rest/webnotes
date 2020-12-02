@@ -1,0 +1,1330 @@
+<IfModule mod_php5.c>
+   php_flag allow_call_time_pass_reference 1
+   php_flag session.use_trans_sid off
+   php_value display_errors 1
+   php_value mbstring.func_overload 2
+   php_value mbstring.internal_encoding UTF-8
+</IfModule>
+
+
+Агент - это PHP-функция, запускаемая с определённой периодичностью. Перед загрузкой каждой страницы система автоматически проверяет, есть ли агент, который нуждается в запуске, и в случае необходимости (по истечении определённого интервала времени) исполняет его.
+Привязка выгрузки к утилите cron и создание агента выгрузки производится на странице Настройка экспорта. Примечание. Пути для экспорта различаются для систем с установленным модулем Интернет-магазин (sale) и без него. В первом случае это будет: Магазин > Настройки > Экспорт данных, во втором: Магазин > Торговый каталог > Экспорт данных.
+
+Индексирование - это процесс сбора, классификации и сохранения данных с целью обеспечить быстрый и легкий поиск информации.
+
+Информация бывает ДИНАМИЧЕСКОЙ и СТАТИЧЕСКОЙ.
+Динамическая - например, когда выводим список новостей: этой информации на сайте нет, она не привязана жестко к странице, а выводится из каких-то спец. мест, где хранится динамическая инфа - инфоблоки.
+В струтуре Битрикс ИНФОБЛОК - самый базовый модуль, и он позволяет каталогизировать и управлять различными типами однородной инфы. С помощью инфоблоков мб реализована публикация различных типов динамической инфы, вообще, любых (каталог товаров или список новостей).
+
+Внутри компонента (файл component.php) доступны следующие предопределенные переменные:
+$componentName – полное название компонента (например: bitrix:news.list).
+$componentTemplate – шаблон, с которым вызывается компонент.
+$arParams – входные параметры компонента (т.е. параметры с которыми вызывается компонент). Параметры доступны так же по их именам.
+$componentPath – путь к компоненту относительно корня сайта (пример: /bitrix/components/bitrix/news.list).
+$parentComponentName – название родительского компонента (пустое, если нет родителя).
+$parentComponentPath – путь к родительскому компоненту относительно корня сайта (пустой, если нет родителя).
+$parentComponentTemplate – шаблон родительского компонента (пустой, если нет родителя).
+$arResult — результат, чтение/изменение. Затрагивает одноименный член класса компонента.
+$this — естественно ссылка на текущий вызванный компонент (объект класса CBitrixComponent), можно использовать все методы класса.
+Кроме того, в компоненте объявлены глобальными переменные $APPLICATION, $USER, $DB.
+
+1. Создать инфоблок со свойствами, где каждое свойство - поле ввода.
+
+Установить кодировку документа:
+	<?header("Content-Type: text/html; charset=utf-8");?>
+
+<?
+if ($arResult['MODULES']['catalog'] && $arResult['OFFER_GROUP'])
+	{
+		$APPLICATION->IncludeComponent(
+			'bitrix:catalog.set.constructor',
+			'.default',
+			array(
+				'IBLOCK_ID' => $arParams['IBLOCK_ID'],
+				'ELEMENT_ID' => $arResult['ID'],
+				'PRICE_CODE' => $arParams['PRICE_CODE'],
+				'BASKET_URL' => $arParams['BASKET_URL'],
+				'CACHE_TYPE' => $arParams['CACHE_TYPE'],
+				'CACHE_TIME' => $arParams['CACHE_TIME'],
+				'CACHE_GROUPS' => $arParams['CACHE_GROUPS'],
+				'TEMPLATE_THEME' => $arParams['~TEMPLATE_THEME'],
+				'CONVERT_CURRENCY' => $arParams['CONVERT_CURRENCY'],
+				'CURRENCY_ID' => $arParams['CURRENCY_ID']
+			),
+			$component,
+			array('HIDE_ICONS' => 'Y')
+		);
+	}
+?>
+
+"Все, что связано с поиском, связано с инфоблоками, т.е. с динам. хранением инфы".
+
+catalog - комплексный компонент. element - карточка товара.
+
+template.php - основной файл любого шаблона.
+result_modifier.php - исп., чтобы изменить к-то параметры после того, как отработает компонент, и мы хотим показать в шаблоне.
+
+===============================
+СОДЕРЖИМОЕ ПАПКИ КОМПОНЕНТА:
+===============================
+• .description.php - содержит название, описание и положение компонента в дерева размещения в визуальном редакторе. Внутри массив.
+• /lang/ - языковые файлы. Наименование, описание, параметры компонента +etc.
+• .parameters.php - в массиве "PARAMETERS" хранятся пары "PARAM"=>"VALUE".
+• .component.php - в нем хранится логика компонента. Оперирует данными через API.
+• /templates/.default/ - подключается, если не укажем конкретный шаблон.
+• template.php - выводит данные в верстку, работает с $arResult[], который формируется в component.php.
+• style.css и script.js подключаются автоматически.
+• /templates/ может отсутствовать, если компонент не имеет вывода, также у компонента мб другие папки с ресурсами.
+-------------------------------------------------------------
+component.php - только для логики, не дб HTML.
+templates.php - только для представления, без логики.
+component.php принимает входящие параметры из $arParams и помещает итог работы в $arResult. Если у компонента есть визуальное представление, то подключается шаблон, и в него передается результирующий массив $arResult, на основании кот. строится вывод инфы.
+
+=========================================
+ИНТЕГРАЦИЯ И НАСТРОЙКА
+=========================================
+Bitrix Framework - созданная на основе PHP платформа для разработки веб-приложений.
+
+MVC - набор модулейю
+(M) Model - классы, функции, работающие с БД, с файловой системой (отслыает почту и т.д.).
+(V) View - отвечает за интерфейс и отображение данных, полученных из контроллера.
+(C) Controller - обработка входящих данных, формирование данных для отображения пользователю.
+
+• Модель - набор модулей, предоставляющих API.
+• Представление - шаблон сайта или компонента.
+• Контроллер (компонент) - это базовая единица, реализующая функционал: меню, лента новостей, форма авторизации, форма обратной связи, список товаров и т.д.
+
+Продукты на базе Bitrix Framework выходят в нескольких редакциях, которые отличаются набором модулей -> доступными компонентами и API функциями.
+
+result_modifier.php - расширение работы типовых компонент.
+
+*!* Не изменять стандартные компоненты и модули (/bitrix/modules/ и /bitrix/components/bitrix), не работать напрямую с БД и не менять структуру ее таблиц.
+
+В начале статической страницы:
+<?
+require ($_SERVER['DOCUMENT_ROOT']."bitrix/header.php");
+$APPLICATION->setTitle("Заголовок страницы");
+?>
+
+------------------------------------------------------------
+
+INIT.PHP
+- /bitrix/php_interface/init.php - подключается в каждом хите (на каждой странице, в начале);
+- не писать в нем код напрямую - исп. отдельные файлы для хранения различного функционала;
+- подключать в init.php через require_once();
+- исп. __autoload();
+
+"Договоримся, что все функции в нашей системе будут храниться в файле functions.php, и положим его в дирректорию include".
+
+Кастомные функции сохраняем в "\bitrix\php_interface\include\functions.php", а сам файл подключаем в "\bitrix\php_interface\init.php", используя запись:
+<?
+if (file_exists($_SERVER['DOCUMENT_ROOT']."bitrix/php_interface/include/functions.php"))
+	require_once($_SERVER['DOCUMENT_ROOT']."bitrix/php_interface/include/functions.php");
+?>
+
+------------------------------------------------------------
+
+<?$APPLICATION->SetPageProperty("title", "Заголовок страницы");?>
+<p><?$APPLICATION->ShowProperty("title");?></p>
+"Тут действуют 'отложенные функции'. Это когда при вызове одной и той же функции, расположенной до и после точки вызова, выводится значение последующей".
+
+Страницы могут наследовать свойства (значения параметров массивов) от корневых каталогов.
+
+/bitrix_1/public_html/bitrix/templates/eshop_bootstrap_red/
+В header.php лежит часть шаблона, которая идет до контентной области, в footer.php - после.
+В /lang/ находятся файлы, содержащие массив с уникальными ключами, хранящие в себе переводы фраз.
+
+------------------------------------------------------------
+
+Отладка. Дописываем к URL "&dump=y" и принтится содержимое $var.
+<?
+	function my_dump($var) {
+		if ($_REQUEST['dump'] == "y") {?>
+				<pre><?print_r($var)?></pre>
+		<?
+		}?>
+?>
+
+-------------------------------------------
+
+ИНФОБЛОК - аналог таблицы БД, который создается и управляется в админ-интерфейсе.
+
+Компоненты, работающие с Инфоблоками располагаются в разделе 'Контент'.
+
+Модуль инфоблоков включает большое количество компонент.
+• "Список новостей" - пододит для вывода любых списков: статей, вакансий, прайс-листов...
+• "Случайное фото" - можно вывести случайную новость или товар.
+
+
+Разместив компонент на странице, он скопировал его из /components/ в /templates/. Дальнейшее редактирование компонента будет осуществляться в шаблоне сайта в /.default/
+
+-------------------------------------------
+
+КЕШИРОВАНИЕ - способ оптимизации работы сайта.
+Ускорение сайта засчет:
+• Уменьшение количества запросов к БД.
+• Меньше исполняемого кода.
+• Не исполняется шаблон, используется сохраненный HTML.
+
+-------------------------------------------
+КОМПЛЕКСНЫЕ КОМПОНЕНТЫ
+
+Называются одним словом (например, menu).
+
+Общий шабон комплексного компонента хранится в /templates/.default/
+
+Тема включает в себя шаблоны, которые содержат вызовы обычных компонент, а также могут содержать html и вызовы API функций. Эти страницы и определяют, что будет показано пользователю: список или детальный просмотр.
+Также содержит шаблоны обычных компонент (в /bitrix/)
+
+Общую логику комплексного компонента можно разделить на 2 шага:
+1. Анализ входящих данных и параметров. Определение на их основе, какую страницу шаблона необходимо подключить, а также формирование параметров для вызова обычных компонентов.
+2. К странице шаблона подключаются обычные компоненты, и в них передаются параметры.
+
+Массив $arResult - это результат работы комплексного компонента.
+
+К слову, в шаблон одновременно передаются $arResult и $arParams.
+
+-------------------------------------------
+
+Как происходит обработка? Если система видит, что адреса не существует физически, то возникает ошибка 404 и подключается файл 404.php. В нет подключается система обработки адресов, правила кот. хранятся в /urlrewrite.php. Внутри него несколько правил.
+
+Метод GetList() используется для выборки элементов в инфоблоке. Он выбирает нужное количество элементов для определенной страницы, исходя из входящих параметров.
+	$rsElement = CIBlock::GetList($arSort, ...)
+
+<!> Дамп $arResult делается в template.php компонента.
+
+<!> Комплексные компоненты НЕ РАЗМЕЩАЮТСЯ в шаблоне сайта - они создают разделы на сайте.
+
+-------------------------------------------
+
+ОТЛОЖЕННЫЕ ФУНКЦИИ SetViewTarget() и ShowViewContent() — это технология, позволяющая:
+	• задавать заголовки (в т.ч. страницы)
+	• пункты навигационной цепочки
+	• CSS-стили
+	• доп. кнопки в панели управления
+	• мета-теги и т.д.
+с помощью функций, используемых непосредственно в теле страницы, а результаты их работы выводить в прологе, т.е. выше по коду.
+Другими словами, эта технология позволяет выводить HTML-код выше самой функции, которая его генерирует (подобное упрощение вносит больше путаницы).
+	<h1><?$APPLICATION->ShowTitle(false)?></h1>
+
+SetViewTarget() - переносит необходимую часть в специальный контейнер.
+ShowViewContent() - показывает содержимое контейнера там, где это необходимо.
+
+if ($arParams['USE_FILTER'] == 'Y')
+{
+	$this->SetViewTarget("filter");
+	... и в конце участка кода, отвечающего за вывод фильтра определим
+	$this->EndViewTarget()
+}
+В итоге, результирующий код как бы закапсулируется: интерпретатор отметит его присутствие, но сразу не выполнит. Участок кода, отвечающий за вывод фильтра, поместим во включаемую область с помощью:
+	<?$APPLICATION->ShowViewContent("filter")?>
+В результате в уже собственной включаемой области будет отображаться "умный фильтр" для данного каталога.
+
+Т.о., с помощью данных функций мы можем проводить более тонкую и детальную настройку при интеграции шаблона.
+
+-------------------------------------------
+
+РАСШИРЕНИЕ ФУНКЦИОНАЛА СТАНДАРТНЫХ КОМПОНЕНТОВ
+
+Часто реализация того или иного функционала выходит за рамки возможностей типового компонента. В этом случае не стоит создавать свой компонент, можно расширить функционал стандартного:
+	• result_modifier.php
+	• component_epilog.php
+	• .parameters.php
+
+Начинающий разработчик вносит изменения прямо в оригинальный типовой компонент. Это неправильно.
+Правильно - кастомизировать компонент, предварительно скопировав в свой namespace. Минус в том, что плодится количество компонентов, требуется больше ресурсов для поддерджки каждого.
+
+Последовательность реализации компонента:
+1. Начало компонента.
+2. Подключение result_modifier.
+3. Подключение template.
+	$this->IncludeComponentTemplate();
+4. Подключение component_epilog (после исполннения шаблона).
+5. Конец компонента.
+
+<!> result_modifier.php и template.php при наличии актуального кеша не отрабатываются. component_epilog - отрабатывает.
+
+.parameters.php в корне компионента как раз и передает $arParams.
+	$arTemplateParameters["LIST_PREV_PIC_H"] = array(
+		"NAME" => GetMessage("LIST_PREV_PIC_H"),
+		"TYPE" => "STRING",
+		"DEFAULT" => "100"
+	);
+После кода выше в настройках компонента появятся новые параметры.
+
+Далее в шаблоне эти параметры можно получить из $arParams. Если поробовать дамп $arParams в result_modifier, мы увидим, что новые параметры отсутствуют. Тогда лезем в контроллер компонента, находим подключение компонента и дополняем массив параметрав нужными значениями, кототорые к данному моменту уже имеются в $arParams:
+	$APPLICATION->IncludeComponent(
+		"bitrix:component",
+		"",
+		Array(
+			"OUR_NEW_KEY" => $arParams["OUR_NEW_KEY"],
+		)
+	)
+Если теперь сделать дамп $arResult в result_modifier, то обнаружим новые
+
+-------------------------------------------
+
+В component_epilog функции будут работать даже при включенном кеше.
+
+Откуда получает $arResult:
+	template.php - из result_modifier (выводится ДО шаблона)
+	component_epilog - из кеша (ПОСЛЕ)
+
+$this внутри component.php - это объект компонента (как ни странно).
+
+-------------------------------------------
+
+ПОЛНАЯ СХЕМА
+
+• result_modifier.php - используется для дополнения $arResult. Кешируется как и шаблон.
+• component_epilog.php - используется для расширений функций компонента. Не кешируется.
+• .parameters.php - дополняют визуальные параметры компонента.
+
+ОСОБЕННОСТИ
+
+• $arResult в component_epilog.php имеет меньше данных, чем в шаблоне и result_modifier.php, потому что result_modifier.php использует спец.метод SetResultCacheKeys(), который ограничивает ключи $arResult, чтобы уменьшить объем кеша (объем массива, поступающего в кеш)
+• Для дополнения $arResult, доступного в component_epilog, используется API функция SetResultCacheKeys() в result_modifier.php, также как в component.php
+• component_epilog.php подключается после исполнения шаблона, после него могут следовать вызовы API (функции component.php).
+• component_epilog.php выполняется на каждом хите, не стоит размещать в нем "тяжелый код".
+-------------------------------------------
+
+Создали свойство в "Инфоблоки", обнаружили новое свойство в форме добавления элемента в этот инфоблок. Залезаем в параметры компонента и находим там новое свойство для вывода...
+
+-------------------------------------------
+
+У функции GetList() есть параметр 'arSelectFields', в кот. можем указать, какие поля функция должна вернуть. И здесь есть указание на то, что мы можем получить поля привязанных элементов.
+
+В параметрах компонента (визуальная оболчка) есть "Поля". Выбранные поля передадутся массиву $arSelect как выбранные пользователем для показа. В доп. строке можем дописать еще.
+
+-------------------------------------------
+
+Она определила константу в /bitrix/php_interface/init.php
+	define("IBLOCK_CAT_ID", 2);
+
+-------------------------------------------
+
+ПАРАМЕТРЫ МОДУЛЕЙ
+
+$email = COption::GetOptionString('main', 'email_from');
+echo "admin email - ".$email;
+
+COption::SetOptionString('main', 'MY_PARAM', 'Y');
+$param = COption::GetOptionString('main', 'MY_PARAM');
+echo "MY PARAMETER = ".$param;
+
+-------------------------------------------
+
+• Собственные функции-агенты подключаем через init.php
+• Агенты исполняются до события OnPageStart, поэтому в агенте не будет доступна $USER. Например, для операции записи в инфоблок нужен пользователь, поэтому в агенте его нужно создать и уничтожить.
+• Запуск агентов можно перенести в cron, что позволит снять нагрузку с сайта.
+
+-------------------------------------------
+
+При работе с инфоблоками обычно используют CIBlockElement::GetList(). Возвращает список элементов по фильтру arFilter.
+
+GetList - достаточно мощная Ф, аналогичная запросу к БД. Выбирает элементу, сортируя, фильтруя их указанным способом, принимает ряд параметров:
+	CIBlockElement::GetList(
+		array arOrder = Array("SORT"=>"ASC"),	// сортировка
+		array arFilter = Array(),					// фильтр
+		mixed arGroupBy = false,					// группировка
+		mixed arNavStartParams = false,			// праметры пагинации
+		array arSelectFields = Array() 			// параметры для выбора в элементе
+	);
+
+=====
+КОД
+=====
+
+<?
+// код, который я искал
+	$arSelect = Array("ID", "IBLOCK_ID", "PROPERTY_CML2_LINK");
+	$arFilter = Array("IBLOCK_ID"=>3, "ACTIVE_DATE"=>"Y", "ACTIVE"=>"Y");
+	$res = CIBlockElement::GetList(Array(), $arFilter, false, Array("nPageSize"=>50), $arSelect);
+	while($ob = $res->GetNextElement()){
+		$arFields = $ob->GetFields();
+		print "<pre>";
+		print_r($arFields);
+		print "</pre>";
+	}
+// в случае "Fatal Error: Class CIBlockElement not found" нужно подключить модуль, в котором исп. данный API. Для этого используем спец. функцию класса CModule - IncludeModule():
+	if(CModule::IncludeModule("iblock")) {
+		// код выше
+	}
+?>
+
+
+В init.php лишь подключаются файлы, лежащие в /bitrix/php_interface/include/
+Также можно создать файл /include/constants.php и объявлять в нем константы.
+
+-------------------------------------------
+
+Редактирование шаблона допускает добавление в него логики действий, но такую модификацию лучше выносить в файлы result_modifier.php и component_epilog.php (которые должны быть расположены в папке шаблона) для более сложного изменения результата работы.
+
+-------------------------------------------
+
+Необходимо преобразовать массив $arFilter (фильтр по выборке) т.о., чтобы выбирались те элементы инфоблоков, у кот. установлены свойства из настроек компонента.
+
+$arSelect - это параметры, кот будут браться для элемента.
+
+Обрезание текста до 50 символов:
+	<p><?=substr($arResult['PREVIEW_TEXT'], 0, 70)?></p>
+
+-------------------------------------------
+
+$arFields[] хранит значения полей формы. Данные форм, заполненных в визуальном редакторе, помещаются в этот массив.
+
+-------------------------------------------
+
+CEvent::Send()
+
+-------------------------------------------
+
+Эта строка обазательно должна присутствовать в самом верху шаблона для обеспечения работоспособности сайта. Она проверяет, подключён ли Битрикс.
+	<?if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();?>
+Далее по коду мб вызов компонентов, и если вызвать страницу напрямую, то без подключённого Битрикса будет выдана ошибка с указанием пути к файлу.
+"Защита. Чтобы не подключили файл напрямую без ядра. Мало ли, что в шаблоне может быть. А в ядре есть модуль проактивной защиты. Строчку лучше всегда вставлять, если Вы знаете, что без ядра данный файл вызываться не может."
+
+Функция для вывода заголовка в шаблоне:
+	<title><?$APPLICATION->ShowTitle();?></title>
+
+Функция выводит метатеги (<meta name="description/keywords", http-equiv="">), стили, скрипты ("которые мы далее спец. образом подключим"):
+	<?$APPLICATION->ShowHead();?>
+
+Очень важно прописать макрос <?=SITE_TEMPLATE_PATH?> в header/footer/index.php (например, после <title>). При обработке макрос заменяется на путь к шаблону.
+	<script src="<?=SITE_TEMPLATE_PATH?>/js/jquery.min.js"></script>
+
+Подключение стилей:
+	$APPLICATION->SetAdditionalCSS("/bitrix/css/main/bootstrap.css");
+	$APPLICATION->SetAdditionalCSS(SITE_TEMPLATE_PATH."/colors.css", true);
+
+<?if (!empty($arResult));?>
+
+"Подключение скриптов в подвале сделаем иным образом. Причина в управляющих тегах, проверяющих версию IE. Поэтому обернем путь спец. методом? который в случае изменения файла, изменит возвращаемый путь так, чтобы браузер не отдавал файл из своего кеша, а взял с сайта".
+	<script src="<?=CUtil::GetAdditionalFileUrl(SITE_TEMPLATE_PATH.'/js/vendor/modernizer-html5shiv-respond.min.js')?>"></script>
+
+Подключение JS-файлов:
+	<?$APPLICATION->AddHeadScript(SITE_TEMPLATE_PATH.'/js/jquery.min.js')?>
+
+-------------------------------------------
+
+Определим, является ли текущая страница Главной, и заносим признак в var:
+	$bIsMainPage = $APPLICATION->GetCurPage(false) == SITE_DIR;
+
+ЕСЛИ МЫ НА ГЛАВНОЙ, ТО, не отображаем хлебные крошки:
+	<?if(!$bIsMainPage):?>
+		<ol class="breadcrumb">
+			<li><a href="">Главная</a></li>
+			<li><a href="">Раздел</a></li>
+			<li><a href="">Детальная страница</a></li>
+		</ol>
+	<?endif;?>
+
+Если на Главной, то элемент НЕ ССЫЛКА.
+	<?if(!$bIsMainPage):?>
+		<span class="logo">
+	<?else:?>
+		<a class="logo" href="">
+	<?endif;?>
+
+-------------------------------------------
+
+Создание редактируемых областей для контент-менеджеров методом IncludeFile().
+	<?$APPLICATION->IncludeFile(
+		// путь до файла, кот. разместим в данной области
+		SITE_DIR."include/slogan.php",
+		array(),
+		// и тип редактирования области
+		// либо HTML с визуальным редактором
+		// либо просто текстовая область
+		array("MODE" => "text"),
+	);?>
+
+-------------------------------------------
+
+Компоненты - это блоки, из кот. строится вывод информации на сайте. Представляет из себя логически завершенный блок, кот. реализует конкретный функционал.
+
+===========
+УСТРОЙСТВО
+===========
+• Состоит из собственно компонента (контроллера) и шаблона (представления).
+• На вход компонента передаются параметры. С помщью API-модулей компонент реализует логику (например, выводит список новостей или на основании структуры сайта выводит цепочку навигации).
+• Шаблон выводит данные на страницу: оформляет данные, полученные из компонента, в HTML. У К мб много разных шаблонов.
+• Компонент, который отображает список новостей обладает в общем-то одинаковой логикой (показывает дату, название, текст, картинку и т.д.), но внешний вид чаще всего разный. Это называется "Отделять логику от представления".
+• В итоге можно сказать, что задача по интеграции верстки - это задача внедрения компонентов и создания для них шаблонов.
+
+===========================================
+ПОЛУЧЕНИЕ ДАННЫХ ФОРМ
+===========================================
+
+Подключение модуля (имя модуля в /bitrix/modules/):
+<?CModule::IncludeModule('form');?>
+\Bitrix\Main\Loader::includeModule("form");
+
+GetResultAnswerArray() - возвращает ВСЕ массивы, описывающие вопросы, поля и ответы на вопросы конкретной веб-формы.
+<?
+CForm::GetResultAnswerArray(
+   $FORM_ID,	// например, 5
+   $arrColumns,
+   $arrAnswers,
+   $arrAnswersVarname,
+   array()	// вернет все результаты
+// array(RESULT_ID => 12) ищет совпадение по ключу
+);
+echo arrAnswers[result_id][field_id][answer_id]['USER_TEXT'];	// введенный текст
+?>
+
+Array (
+	[6] => Array (
+		[9] => Array (
+			[11] => Array (
+				[RESULT_ID] => 6
+				[FIELD_ID] => 9
+				[SID] => new_field_93485
+				[VARNAME] => new_field_93485
+				[TITLE] =>
+				[TITLE_TYPE] => text
+				[FILTER_TITLE] =>
+				[RESULTS_TABLE_TITLE] =>
+				[ANSWER_ID] => 11
+				[ANSWER_TEXT] =>
+				[MESSAGE] =>
+				[ANSWER_VALUE] =>
+				[VALUE] =>
+				[USER_TEXT] => ппорро
+				[USER_DATE] =>
+				[USER_FILE_ID] =>
+				[USER_FILE_NAME] =>
+				[USER_FILE_IS_IMAGE] =>
+				[USER_FILE_HASH] =>
+				[USER_FILE_SUFFIX] =>
+				[USER_FILE_SIZE] =>
+				[FIELD_TYPE] => text
+				[FIELD_WIDTH] => 0
+				[FIELD_HEIGHT] => 0
+				[FIELD_PARAM] =>
+			)
+		)
+	)
+)
+
+GetDataByID() - возвращает массив, описывающий значения ответов на вопросы или значения полей веб-формы для указанного результата [RESULT_ID].
+<?
+$RESULT_ID = 7;
+$arAnswer = CFormResult::GetDataByID(
+   $RESULT_ID,
+   array(new_field_93485),	// мб пустым
+   $arResult,
+   $arAnswer2
+);
+dump($arAnswer);
+echo $arAnswer[answer_symbol_id][11][USER_TEXT];
+echo $arAnswer[new_field_93485][0][USER_TEXT];
+?>
+
+Array (
+	[new_field_93485] => Array (
+      [0] => Array (
+			[RESULT_ID] => 12
+			[FIELD_ID] => 9
+			[SID] => new_field_93485
+			[VARNAME] => new_field_93485
+			[TITLE] =>
+			[TITLE_TYPE] => text
+			[FILTER_TITLE] =>
+			[RESULTS_TABLE_TITLE] =>
+			[ANSWER_ID] => 11
+			[ANSWER_TEXT] =>
+			[MESSAGE] =>
+			[ANSWER_VALUE] =>
+			[VALUE] =>
+			[USER_TEXT] => ваыаываыв
+			[USER_DATE] =>
+			[USER_FILE_ID] =>
+			[USER_FILE_NAME] =>
+			[USER_FILE_IS_IMAGE] =>
+			[USER_FILE_HASH] =>
+			[USER_FILE_SUFFIX] =>
+			[USER_FILE_SIZE] =>
+			[FIELD_TYPE] => text
+			[FIELD_WIDTH] => 0
+			[FIELD_HEIGHT] => 0
+			[FIELD_PARAM] =>
+		)
+	)
+)
+
+-------------------------------------------
+
+Сделать поля обязательными для заполнения:
+
+<?if (!empty($_REQUEST['name']) and !empty($_REQUEST['description'])) {}?>
+
+-------------------------------------------
+
+<?
+// проверим установлен ли модуль "Инфоблок" и если да то подключим его
+if (CModule::IncludeModule("iblock")):
+    // здесь необходимо использовать методы модуля "Инфоблок"
+    ...
+endif;
+?>
+
+-------------------------------------------
+
+Взято с https://dev.1c-bitrix.ru/support/forum/forum6/topic63317/
+Использовал в эпилоге
+
+<?
+$rsElements = CIBlockElement::GetList(
+   Array("SORT"=>"ASC", "NAME"=>"ASC"),
+   Array("IBLOCK_ID"=>3, "ACTIVE"=>"Y", "PROPERTY_CLM2_LINK"=>$ELEMENT_ID)
+);
+
+while ($arElement = $rsElements->GetNext() )
+{echo "<pre>"; print_r($arElement); echo "</pre>";}
+?>
+-------------------------------------------
+
+ИМЯ ХОСТА
+
+SITE_SERVER_NAME
+$_SERVER['HTTP_HOST']
+$_SERVER['SERVER_NAME']
+
+<? SITE_SERVER_NAME.$APPLICATION->GetCurPage(); ?>
+
+
+АДРЕС ТЕКУЩЕЙ СТРАНИЦЫ:
+
+<?$APPLICATION->GetCurPage();?>
+
+-------------------------------------------
+
+<?echo "<details>"; dump($arResult); echo "</details>";?>
+
+-------------------------------------------
+
+РЕДИРЕКТ
+
+<?header("Location: http://example.com");?>
+<?header("Refresh: 1; url=".$_SESSION['OC_PAGE']);?>
+
+ПОДКЛЮЧЕНИЕ СТИЛЕЙ И СКРИПТОВ:
+<?
+	$APPLICATION->SetAdditionalCSS(SITE_TEMPLATE_PATH."/pace/pace-theme-flash.css", true);
+	$APPLICATION->AddHeadScript(SITE_TEMPLATE_PATH.'/pace/pace.min.js');
+?>
+
+-------------------------------------------
+
+МАСКА ТЕЛЕФОНА на jQuery
+
+$('.oneclick-inp').keypress(function(e) {
+	if (e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57)) {
+		return false;
+	}
+});
+-------------------------------------------
+MASKED INPUT PLUGIN
+
+1. Подключаем jQuery в header.php:
+• CJSCore::Init(array("jquery"));
+• $APPLICATION->AddHeadScript(SITE_TEMPLATE_PATH.'/js/jquery.min.js');
+• <script src="jquery.js"></script>
+• <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+• <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+• <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+2. Подключаес плагин Masked Input в header/template.php:
+• <script src="jquery.maskedinput.min.js"></script>	-
+• $this->addExternalJS('/bitrix/public_html/bitrix/js/altasib.feedback/jquery.maskedinput.min.js');
+
+3. Вызвать плагин:
+// после загрузки страницы
+	$(function() {
+// получим элемент, к которому необходимо добавить маску
+		$("#phone").mask("8(999) 999-9999");
+	});
+
+-------------------------------------------
+
+ПРОСТЕНЬКИЙ ОБМЕН ДАННЫМИ AJAX <-> PHP
+
+<?
+if ($_SERVER["REQUEST_METHOD"] == "POST")
+{
+	$data = $_POST['phone'];
+	if ($data != "") {
+		echo $data;
+	} else {
+		echo 'Пусто';
+	}
+}
+?>
+
+В ОБУЧАЛКЕ БИТРИКСА
+<?
+require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_before.php");
+
+$APPLICATION->SetTitle("Handler");
+   CJSCore::Init(array('ajax'));
+   $sidAjax = 'testAjax';
+if (isset($_REQUEST['ajax_form']) && $_REQUEST['ajax_form'] = $sidAjax) {
+   $GLOBALS['APPLICATION']->RestartBuffer();
+   echo CUtil::PHPToJSObject(array(
+      'RESULT' => 'HELLO',
+      'ERROR' => '',
+   ));
+   die();
+}
+?>
+
+-------------------------------------------
+
+<?php if ($expression == true): ?>
+	Это будет отображено, если выражение истинно.
+<?php else: ?>
+	В ином случае будет отображено это.
+<?php endif; ?>
+
+-------------------------------------------
+
+РАБОЧИЙ AJAX-ЗАПРОС на jQuery и BX
+
+<script>
+$('#oneclick').click(function() {
+	$(".oneclick-inp").mask("+7(999) 999-9999");
+	$('.oneclick-popup').slideDown('slow');
+
+	$('.oneclick-btn').click(function() {
+		var oneclick_inp = $('.oneclick-inp').val();
+		if (!oneclick_inp) return false;
+		$.ajax( {
+			type: 'POST',
+			url: '/form_handler.php',
+			data: "phone="+oneclick_inp,
+			dataType: 'html',
+			success: function(data) {alert('Создана запись в инфоблоке')}
+		});
+	})
+})
+</script>
+
+<?CJSCore::Init(array('ajax'));?>
+<script>
+	BX.ajax({
+	url: '/form_handler.php',
+	data: 'phone='+oneclick_inp,
+	method: 'POST',
+	dataType: 'html',
+	timeout: 2,
+	async: true,
+	processData: true,
+	emulateOnload: false,
+	start: true,
+	cache: false,
+	onsuccess: function(data){
+		alert('Успех')
+	},
+	onfailure: function(){
+		alert('Ошибка')
+	}
+});
+</script>
+
+-------------------------------------------
+
+КЛИК В Битриксе
+
+	<button id='clik'>Событие BX</button>
+	BX.bind(BX('#clik'), 'click', function() {
+		alert("It's alive!");
+	})
+
+DOM READY в Битриксе
+
+	BX.ready(function() {
+	   // свой код выполнится после загрузкт DOM
+	})
+
+-------------------------------------------
+
+jQuery DOM READY
+
+$(function() {
+	alert( "ready!" );
+	// код...
+});
+
+-------------------------------------------
+
+Vadim Dumbravanu пишет:
+	//тут include header.php
+	...
+	if($_REQUEST['ajax']=='Y')
+	$APPLICATION->RestartBuffer();
+	...
+	//тут компонент вывода новости
+	...
+	if($_REQUEST['ajax']=='Y')
+	die();
+	...
+	//тут include footer.php
+Другой пишет:
+	Забавное кино, получается мне нужно выполнить скрипт достаточно простой. Но для этого я жду пока полностью отработает ЦЕЛЫЙ ХЕДЕР? А если у меня в хедере тьма всего, корзины, меню, списки каталогов - мне все это тоже подгружать аяксом, а потом сбрасывать.
+
+Третий пишет:
+	А зачем Вам подгружать целый хедер подгрузите без визуальной части header и footer, только служебную часть со скриптами.
+	используйте вот такую конструкцию:
+	<?
+	// подключение служебной части пролога
+	require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_before.php");?>
+	тело страницы
+	<?
+	// подключение служебной части эпилога
+	require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_after.php");?>
+
+-------------------------------------------
+
+#1
+	Если скрипт будет в отдельном файле, то экономичнее все же подключать только один пролог:
+	<?
+		define('STOP_STATISTICS', true);
+		require_once($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/prolog_before.php');
+		$GLOBALS['APPLICATION']->RestartBuffer();
+		[ajax code]
+	?>
+	В противном случае просто перед выводом аякс-результата очистите буфер:
+	$GLOBALS['APPLICATION']->RestartBuffer();
+	и сделайте die() в конце.
+
+#2
+Вот спасибо! То есть все скидывается в буфер а потом выводится.
+	<?
+		define('STOP_STATISTICS', true);
+		require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
+		$APPLICATION->SetTitle("Title");
+		$GLOBALS['APPLICATION']->RestartBuffer();
+	?>
+		123
+	<?die();?>
+	Получаем текст 123 без лишнего. Но вариант #1 лучше.
+
+-------------------------------------------
+
+RestartBuffer() - CБРОС БУФЕРА В БИТРИКС
+
+Иногда бывает необходимо вывести содержимое определенного компонента без header'a и footer`a.
+Для сброса буфера в Битрикс есть специальный метод RestartBuffer.
+Используется он следующим образом, в файл, к которому идет обращение добавьте код:
+	$APPLICATION->RestartBuffer();
+И в конце:
+	die();
+
+-------------------------------------------
+
+Я делаю обычно папочку в корне сайта "php" и в нее складываю все файлы, которые обрабатывают post-запросы. Структура файла для обработки post-запроса такова:
+	<?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_before.php"); //ядро битрикса ?>
+...код обработки запроса, т.д. и возращение данных. Как-то так.
+
+-------------------------------------------
+
+ПОДКЛЮЧЕНИЕ МОДУЛЕЙ
+
+	if(!CModule::IncludeModule('iblock')) return;
+или
+	CModule::IncludeModule('iblock');					(old)
+	\Bitrix\Main\Loader::includeModule('iblock');	(modern)
+
+-------------------------------------------
+
+ПОДКЛЮЧЕНИЕ ВНЕШНИХ CSS И JS В ШАБЛОНЕ КОМПОНЕНТА
+
+(https://goo.gl/vWYnka)
+
+// в порядке возрастания правильности
+Насколько я понял, речь об assets, кастомизирующих шаблон и предназначенных для шаблона.
+
+1. В шаблоне "подключить жестко", инлайном, что совсем не спортивно:
+	<link href="/local/styles.css" type="text/css" rel="stylesheet">
+2. Захардкодить в компоненте (т.к. есть ловушка кеширования в шаблоне), что еще менее спортивно:
+	<? $APPLICATION->SetAdditionalCss("/local/styles.css"); ?>
+3. Архитектурно правильный способ (но его можно считать устаревшим), создать component_epilog.php:
+<?	if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
+	global $APPLICATION;
+	$APPLICATION->SetAdditionalCss("/local/styles.css"); ?>
+4. И теперь простой и самый правильный способ в template.php:
+<? $this->addExternalCss("/local/styles.css");
+	$this->addExternalJS("/local/liba.js"); ?>
+	В комплекте идёт поддержка кеширования не только текущего шаблона, но и родительского. Не зависимо от кеша, файлы всегда будут с шаблоном! Ура!
+
+Комментарии:
+#1
+А в component_epilog.php будет работать?
+	$this->addExternalCss("/local/styles.css");
+	$this->addExternalJS("/local/liba.js");
+#2
+Технически можно вызвать эти API в component_epilog.php и они сработают. Нужно использовать вместо
+	$this->addExternalCss("/local/addcss.css");
+	$this->__template->addExternalCss("/local/addcss.css");
+Так как в файле шаблона $this это объект CBitrixComponentTemplate, к которому и принаджлежит метод addExternalCss, а в component_epilog.php $this - это CBitrixComponent, через который можно получить и объект шаблона.
+Но не уверен что это правильный подход, методы же для шаблона разработаны
+#3
+Теперь у CBitrixComponent ($this в component_epilog) есть метод getTemplate():
+	$this->getTemplate()->addExternalCss("/local/addcss.css");
+
+-------------------------------------------
+
+ПОДКЛЮЧЕНИЕ СКРИПТОВ и СТИЛЕЙ
+
+1. В header.php (неспортивный вариант):
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+2. В header.php (спортивный, но для старого ядра):
+	$APPLICATION->ShowHead();
+	$APPLICATION->AddHeadScript(SITE_TEMPLATE_PATH.'/pace/pace.min.js');
+	$APPLICATION->SetAdditionalCSS("/bitrix/css/main/bootstrap.css");
+	$APPLICATION->AddHeadString('<link href="/include/css/services.css" type="text/css" rel="stylesheet">',true);
+
+3. В template.php:
+	$this->addExternalJS('/bitrix/js/alpha/jquery.maskedinput.min.js');
+	$this->addExternalCss('/bitrix/css/main/bootstrap.css');
+
+4. В component_epilog.php:
+	$this->getTemplate()->addExternalCss("/local/addcss.css");
+
+-------------------------------------------
+
+ПОДКЛЮЧЕНИЕ СКРИПТОВ и СТИЛЕЙ (для D7)
+
+Asset - класс отвечает за подключение стилей и скриптов. Обратиться к объекту можно через
+	Bitrix\Main\Page\Asset::getInstance()->add[Js/Css/String]();
+
+Используется вместо методов старого ядра:
+	CMain::AddHeadScript
+	CMain::SetAdditionalCss
+	CMain::AddHeadString.
+
+// D7
+	use Bitrix\Main\Page\Asset;
+// Методы добавляют js/css/строку в секцию <head>…</head> сайта.
+	Asset::getInstance()->addJs(SITE_TEMPLATE_PATH."/js/fix.js");
+	Asset::getInstance()->addCss(SITE_TEMPLATE_PATH."/styles/fix.css");
+	Asset::getInstance()->addString("<link href='http://...' rel='stylesheet'>");
+
+
+Естественно, вы можете также разместить код в шаблоне сайта через:
+	Bitrix\Main\Page\Asset::getInstance()->addJs();
+Но более правильным решением будет третий подход.
+
+-------------------------------------------
+
+ВКЛЮЧАЕМАЯ ОБЛАСТЬ
+
+Короткая запись с использованием метода IncludeFile, который служит для подключения файлов:
+	<?$APPLICATION->IncludeFile(SITE_DIR."inc/file.php",Array(),Array("MODE"=>"html"));?>
+
+-------------------------------------------
+
+ЗАПРЕТ ВЫВОДА КОМПОНЕНТА НА ОПРЕДЕЛЕННЫХ СТРАНИЦАХ
+
+Всегда может понадобиться запретить для вывода определённый компонент, кусок кода или часть дизайна шаблона в Битрикс на заданных страницах или разделах. Для этого воспользуемся методом GetCurPage, который возвращает путь к текущей странице относительно корня сайта и просто сделаем проверку на выполнение условия.
+
+Допустим, нужно запретить вывод на главной странице:
+	<?if($APPLICATION->GetCurPage(true) != SITE_DIR."index.php"):?>
+		// тут код
+	<?endif;?>
+
+Либо, наоборот, требуется разрешить вывод в нужных разделах. Разрешим вывести код только на 2 страницах:
+	<?if($APPLICATION->GetCurPage(true) == SITE_DIR."example/make/index.php") && $APPLICATION->GetCurPage(true) != SITE_DIR."example/personal/make/index.php":?>
+		тут код
+	<?endif;?>
+
+-------------------------------------------
+
+ПОДКЛЮЧЕНИЕ МОДУЛЕЙ
+
+Loader - класс для загрузки необходимых файлов, классов и модулей. Единственный класс, который включается непосредственно. Используется для подключения всех модулей, кроме main и fileman. Аналог старого CModule.
+
+// D7
+	use Bitrix\Main\Loader;
+	Loader::includeModule("iblock");
+
+// Старое ядро
+<?
+// проверим установлен ли модуль "Информационные блоки" и если да то подключим его
+if (CModule::IncludeModule("iblock")):
+    // здесь необходимо использовать метода модуля "Информационные блоки"
+    ...
+endif;
+?>
+
+-------------------------------------------
+
+// Старое ядро
+CMain::AddHeadScript( $src, $additional=false )
+   $APPLICATION->AddHeadScript('/bitrix/templates/.default/additional.js');
+   $APPLICATION->SetAdditionalCSS("/bitrix/templates/.default/additional.css");
+// D7
+\Bitrix\Main\Page\Asset::addJs( $path, $additional = false );
+   use Bitrix\Main\Page\Asset;
+   Asset::getInstance()->addJs(SITE_TEMPLATE_PATH . "/js/fix.js");
+
+// Старое ядро
+CMain::SetAdditionalCSS( string Path2css, additional=false )
+   <? $APPLICATION->SetAdditionalCSS("/bitrix/templates/demo/additional.css"); ?>
+   // Добавить файл стилей в конец списка:
+   <? $APPLICATION->SetAdditionalCSS("/bitrix/templates/demo/additional.css", true) ?>
+// D7
+\Bitrix\Main\Page\Asset::addCss( $path, boolean $additional = false );
+
+-------------------------------------------
+
+Тут не битрикс виноват. Если при определенных обстоятельствах уже буферизированный контент нужно убрать, а Битрикс всегда буферизирует вывод из-за необходимости поддержки отложенных функций, нужно вызвать $APPLICATION->RestartBuffer().
+Кроме того, можно вместо хедера подключить init-файл главного модуля prolog_before.php, тогда буфер вывода вообще трогать не нужно.
+
+-------------------------------------------
+
+ShowHead()
+
+Метод предназначен для вывода в шаблоне сайта основных полей тега <head>: мета-теги Content-Type, robots, keywords, description; стили CSS; скрипты, заданные через CMain::AddHeadScript.
+
+"На сколько мне известно, по умолчанию <?$APPLICATION->ShowHead()?> не подключает jquery. Битриксовский jquery подключается функцией CJSCore::Init(array("jquery")); . Если <?$APPLICATION->ShowHead()?> выводит jquery - значит где то, программист (разработчик сайта) подключает его с помощью функции $APPLICATION->AddHeadScript какой то компонент(сторонний). Следовательно нужно выключить это подключение и втыкнуть свое".
+
+<head>
+	<?$APPLICATION->ShowHead();?>
+	<title><?$APPLICATION->ShowTitle()?></title>
+</head>
+
+ВЫВОД
+Подключая скрипты через $APPLICATION->AddHeadScript(), мы как бы добавляем их в стек, а с помощью $APPLICATION->ShowHead() - инициализируем в <head></head>.
+
+-------------------------------------------
+
+РЕГИСТРАЦИЯ БИБЛИОТЕКИ (попробую с jbox)
+
+Укажите у библиотек зависимости в момент декларации. Пример из /bitrix/modules/include.php
+   $arTreeDescr = array(
+      'js' => '/bitrix/js/catalog/core_tree.js',
+      'css' => '/bitrix/panel/catalog/catalog_cond.css',
+      'lang' => '/bitrix/modules/catalog/lang/'.LANGUAGE_ID.'/js_core_tree.php',
+      'rel' => array('core', 'date', 'window')
+   );
+   CJSCore::RegisterExt('core_condtree', $arTreeDescr);
+Библиотека требует предварительного подключения core, core_date, core_window (ключ rel)
+
+
+Еще какой-то вариант:
+   $arJSLib = array(
+          'js' => '/bitrix/js/main/jquery/jquery-mysuperversion.min.js',
+          'skip_core' => true
+      );
+   CJSCore::RegisterExt('jquery', $arJSLib);
+
+-------------------------------------------
+
+Проверить ппеременную на существование:
+
+if (is_set($arResult['...']))
+
+-------------------------------------------
+
+"Разобрался, в result_modifier.php тоже не прокатит, он подключается только если шаблон НЕ кешируется. Судя по документации, подобные вещи следует подключать в component_epilog.php , так как он обязательно отрабатывает при каждом хите."
+
+-------------------------------------------
+
+КОНФЛИКТЫ РАЗНЫХ ВЕРСИЙ JQUERY
+
+#1
+// подключаем последнюю версию jQuery
+// подключаем jQuery 1.6
+var $jq16 = jQuery.noConflict(true);  // сохраняем ссылку
+// подключаем jQuery 1.4
+var $jq14 = jQuery.noConflict(true);  // сохраняем ссылку
+
+;(function($) {
+  // старый плагин, который использует jQuery 1.4
+}($jq14));
+
+;(function($) {
+  // чуть новее, использует jQuery 1.6
+}($jq16));
+
+;(function($) {
+  // используем последнюю версию jQuery
+}(jQuery));
+
+#2
+- Можете развернуто ответить как это поможет устранить конфликт между двумя версиями jQuery при использовании произвольных скриптов без необходимости их переработки?
+- Наименее затратным в плане модификаций я вижу примерно такой способ:
+	<script src="jquery.1.7.2.js"></script>
+	<script>
+		var jquery_1_7_2 = jQuery;
+	</script>
+	<script src="jquery.1.3.2.js"></script>
+
+	// все скрипты лайтбокса надо обернуть в такой код
+	(function(){
+		var $ = jQuery = jquery_1_7_2;
+		// тут код лайтбокса, что был в файле до нашего вмешательства.
+	})();
+Тогда старые скрипты сохранят работоспособность, и лайтбокс будет работать с версией 1.7.2
+
+#3
+Подключаете нужную библиотеку jquery и сразу за ней свой скрипт script.js:
+   var MyApp.jQuery = jQuery.noConflict();
+   // работаете в своем коде с jquery через переменную MyApp.jQuery
+   MyApp.jQuery(function($) {
+      $(...)...
+   });
+
+-------------------------------------------
+
+Любопытный пример взаимодействия PHP и JS
+
+<?php
+if (isset($_POST['u_name']))
+{
+	echo $_POST['u_name'] . '</p>';
+} else {
+	echo "<script type='text/javascript'>";
+	echo "document.write('<form method=\'post\'>');";
+	echo "document.write('<p>Ваше имя:<br />');";
+	echo "document.write('<input type=\'text\' name=\'u_name\' value = \'' + userName3 + '\'</p>');";
+	echo "document.write('<input type=\'submit\' />');";
+	echo "document.write('</form>');";
+	echo "</script>";
+
+	exit();
+}
+?>
+
+-------------------------------------------
+
+На AJAX страницах нет смысла подключать визуальные части header и footer.
+Вместо
+	require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
+пропишите
+	require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_before.php");
+
+Таким образом Вы подключите служебную часть пролога, т.еэ все функции битрикс, но не будет выводиться header. -> не придется применять
+	$GLOBALS['APPLICATION']->RestartBuffer();
+
+Вместо
+	require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php");
+пропишите
+	require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/epilog_after.php");
+
+-------------------------------------------
+
+Не подключай скрипты в epilog. Сделай в футере, перед body, с помощью
+	(D7) Asset::getInstance()->addJs(SITE_TEMPLATE_PATH."/js/fix.js");
+	CMain::AddHeadScript()
+
+-------------------------------------------
+
+echo "<pre>"; print_r($); echo "<pre>";
+
+-------------------------------------------
+
+УСЛОВНОЕ ОТОБРАЖЕНИЕ HTML-КОДА:
+
+// если не Главная
+$bIsMainPage = $APPLICATION->GetCurPage(false) == SITE_DIR;
+<? if($bIsMainPage): ?>
+	// html-код
+<?endif;?>
+
+================================================
+
+<link href="<?=SITE_TEMPLATE_PATH?>/common.css" rel="stylesheet">
+Здесь испльзована одна из множества констант. Она содержит путь от корня сайта к каталогу шаблона.
+В /.default/ содержится шаблон по умолчанию. Содержит шаблоны компонентов, доступных в других шаблонах, здесь также удобно размещать общие файлы стилей, скриптов и т.д.
+
+<link rel="shortcut icon" type="image/x-icon" href="<?=SITE_TEMPLATE_PATH?>/favicon.ico" />
+
+\cur_tmpl\lang\ru\header.php
+	<? $MESS['WORKTIME'] = "время работы"; ?>
+\cur_tmpl\header.php
+	<span><?=GetMessage('WORKTIME')?><span>
+
+Выбирая "Изменить страницу", меняешь только контентную область.
+
+
+=========================================
+КОМПОНЕНТЫ
+=========================================
+Компонент - это основной объект в Битриксе, реализующий определенный функционал (функцию): меню, список товаров с добавлением в корзину, оформление заказа с отправкой писем и т.д.
+Состоит из компонента (контроллера, логики), который манипулирует данными, и шаблона (представления), который выводит данные на страницу.
+Практически все элементы в шаблоне - это компоненты. На странице сайта - также компоненты.
+
+// конструкция вызова компонента
+<?$APPLICATION->IncludeComponent(
+	// пространство имен bitrix, в котором лежит компонент menu
+	"bitrix:menu",
+	// наименование шаблона. Пустой - значит, по умолчанию
+	"",
+	// массив входящих параметров
+	Array(
+		"ROOT_MENU_TYPE" => "left",
+		...
+	),
+	// исп. при работе комплексного компонента
+	false
+)?>
+
+Компоненты расположены в \bitrix\components\
+
+Чтобы админ самостоятельно, без привлечения рзработчика, менять содержимое элементов страницы, сущ. "включаемые области".
+Включаемая область - это компонент для подключения и изменения статических областей.
+Через включаемую область можно подключать php-файлы из /include/. Можно вставить ВО в любую область страницы, положить в нее html-код, который интепретируется и внедриться в страницу/раздел.
+
+Подключение файла:
+	<?include_once($_SERVER['DOCUMENT_ROOT'].'/bitrix/templates/.default/include/header.php')?>
+
+Подключение лэнгового файла:
+<?
+if(!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)die();
+IncludeTemplateLangFile(__FILE__);
+?>
+
+[Фраза из языкового файла]
+Фнукции GetMessage() передается 1 параметр в виде ключа:
+	<?=GetMessage("AUTH_LOGIN")?>
+
+PHP прочтет содержимое, если условие верно:
+	<?if $arResult("SECURE_AUTH")?>
+		... вложенный код HTML или JS выполняется или нет ...
+	<?endif?>
+
+print_r() выводит переменной (ключей массива), а var_dump() и var_export - еще и типы данных.
+
+"При внедрении собственного шаблона в компонент удобно брать за основу стандартный шаблон компонента, но прежде его требуется скопировать в шаблон сайта, а атем вносить изменения".
+
+.default - стандартный шаблон, имеющий особенности. Его главное отличие в том, что тут шаблоны комонентов доступны в других шаблонах, также в нем удобно размещать общие файлы стилей, скриптов, картинок и т.д., если у вас есть несколько шаблонов, использующих эти assets.
+
+result_modifier - является инструментом для изменения данных работы компонента произвольным образом (выходных данных). Например, приведения значения к нижнему регистру.
+Функции можно описывать в файле init.php.
+
+dbconn.php - осуществляет подключение к БД.
+
+init.php - предназначен для хранения кастомных функций и обработчиков событий (событие, например, добавление элемента инфоблока). Это файл загружается в начале запуска системы.
+Возможное содержимое:
+<?
+	AddEventHandler("module", "EventName", "FunctionName");
+	function FunctionName(params)
+	{
+		//code
+	}
+?>
+
+В /upload/iblock содержатся файлы и изображения из инфоблоков, которые загружаются в свойствах ("Анонс"" или "Детальная картика").
+В /upload/resize_cache загружаются кешированные картинки при включенной опции "Изменение размера изображений".
+
+В D7 появилась папка Local, рекомендованная для хранения щаблонов и др. файлов, кот. вы изменяете из ядра.
+
+-------------------------------------------
+
+ИНФОБЛОК - это модуль, который позволяет каталогизировать и управлять различными типами однородной информации. С его помощью мб реализована публикация различных типов динамической инфы: каталоги товаров, блоки новостей, справочники и т.д. ИБ хранят все данные в БД.
+Преиимущества ИБ перед таблицей в БД:
+1. Наличие админки, кот. позволяет создавать, редактировать и удалять их. Т.е. не нужно создавать таблицы в БД самостоятельно. При этом в сущности можно использовать как типовые наборы полей, так и дополнить своими. Можно настроить права доступа, журналирование событий, SEO-возможности и т.д.
+
+-------------------------------------------
+
+$('#mail_send').submit(function(){
+	 var str = $(this).serialize();
+	 $.ajax({
+			type: 'POST',
+			url: 'path/hello.php',
+			success: function(data) {
+				$('#output').html(data);
+			}
+	 })
+	 return false;
+});
+
+-------------------------------------------
+
+/*----- HTML -----*/
+
+<form id="my_form">
+   <label>Имя:<input type="text" name="name" value=""></label><br>
+   <label>Телефон:<input type="text" name="phone" value=""></label><br>
+   <input type="hidden" name="page"  value="URL страницы">
+   <input type="hidden" name="info"  value="Какая-то инфа">
+   <button type="submit">Отправить</button>
+</form>
+
+/*----- JS -----*/
+
+<script>
+   $('#my_form').submit(function() {
+      alert('AJAX is preparing...');
+      $.ajax({
+         type: 'POST',
+         url: '/handler.php',
+         // dataType: 'text',
+         data: $(this).serialize()
+      }).done(function(data) {
+         alert(data);
+      })
+      return false;
+   })
+</script>
+
+/*----- PHP -----*/
+
+$_POST уже доступен и содержит данные.
+
+-------------------------------------------
+-------------------------------------------
+-------------------------------------------
+-------------------------------------------
+-------------------------------------------
+
+========================================================================
+ПРОСТАЯ ФОРМА HTML+JS+PHP
+========================================================================
+
+HTML
+-------------------------------------------------------------------------
+<form action="" id="form">
+  <input type="text" name="name" placeholder="Ваше имя" required><br>
+  <input type="text" name="phone" placeholder="Ваш телефон" required><br>
+  <textarea name="text"></textarea>
+  <button>Отправить</button>
+</form>
+-------------------------------------------------------------------------
+JS
+-------------------------------------------------------------------------
+<script>
+$(function() {
+   $('#form').submit(function() {
+      $.ajax({
+         type: 'POST',
+         url: 'mail.php',
+         data: $this.serialize()
+      }).done(function() {
+         alert("Спасибо за заявку! Скоро мы с вами свяжемся.");
+      });
+      return false;
+   })
+})
+</script>
+-------------------------------------------------------------------------
+PHP
+-------------------------------------------------------------------------
+<?
+$recepient = "vo1-khaproff@mail.ru";
+$sitename = "Название сайта";
+
+$name = trim($_POST['name']);
+$phone = trim($_POST['phone']);
+$text = trim($_POST['text']);
+$message = "Имя: $name \nТелефон: $phone \nТекст: $text";
+
+$pagetitle = "Новая заявка с сайта \"$sitename\"";
+//mail($recepient, $pagetitle, $message, "Content-type: text/plain; charset=\"utf-8\"\n From: $recepient");
+echo $_POST['name'];
+?>

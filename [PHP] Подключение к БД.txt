@@ -1,0 +1,287 @@
+===================================================================
+ПОДКЛЮЧЕНИЕ К БАЗЕ ДАННЫХ [mysql, mysqli, PDO]
+===================================================================
+
+БД - совокупность взаимосвязанных данных, сохраняемая в 2-мерных таблицах. БД представляет собой организованный набор таблиц, где каждая ТАБЛИЦА - неупорядоченный массив из однородных элементов (ЗАПИСЕЙ). Каждая запись может содержать 1 или неск. именовынных полей. Каждое ПОЛЕ содержит опр. тип данных.
+
+Для получения инфы из БД надо отправить SQL-запрос, после чего получим таблицу с нужными значениями.
+
+SQL позволяет делать выборку данных - извлекать инфу из БД, организацию данных - устаналвивать структуру и отношения между элементами БД (зависимости), обработка данных (добавление, извлечение, обновление, удаление).
+
+Есть неск. варинато подключения к БД: mysqli и PDO. Первый работает только с MySQL.
+
+
++================================+
+|    ПОДКЛЮЧЕНИЕ К БД [mysql]    |
++================================+
+
+PROCEDURAL
+	mysqli_connect
+	mysqli_connect_errno
+	mysqli_connect_error
+	mysqli_real_escape_string
+	mysqli_query
+	mysqli_fetch_assoc
+	mysqli_close
+
+Object-oriented
+	$mysqli = new mysqli
+	$mysqli->connect_errno
+	$mysqli->connect_error
+	$mysqli->real_escape_string
+	$mysqli->query
+	$mysqli->fetch_assoc
+	$mysqli->close
+
+
+
+$hostname = "*****";
+$username = "*****"; // имя пользователя (в Denwer`е по умолчанию "root")
+$password = "*****";
+$dbName   = "*****";
+$table    = "test_table";
+mysql_connect($hostname, $username, $password) or die ("Не могу создать соединение");
+mysql_select_db($dbName) or die (mysql_error());
+$query = "SELECT coord1,coord2 FROM $table";
+$res = mysql_query($query) or die(mysql_error());
+mysql_close();
+
+-------------------------------------------------
+mysql_connect(DB_HOST, DB_USERNAME, DB_PASSWORD)
+	or die("<p>Ошибка подключения к базе данных: " . mysql_error() . "</p>");
+echo "<p>Вы подключились к MySQL!</p>";
+mysql_select_db(DB_NAME)
+	or die("<p>Ошибка при выборе базы данных " . DB_NAME . mysql_error() . "</p>");
+
+$query = "SELECT ...";
+$result = mysql_query($query);
+if ($result)
+{
+	$row = mysql_fetch_array($result);
+	$first_name = $row['first_name'];
+}
+
+-------------------------------------------------
+//Получение результата и обработка ошибок в случае отсутствия результата
+if (mysql_num_rows($result) == 0) handle_error("$error_msg");
+
+-------------------------------------------------
+if (mysql_num_rows($results) == 1)
+{
+	$result = mysql_fetch_array($results);
+	$current_user_id = $result['user_id'];
+	$current_username = $result['username'];
+} else {
+	header('HTTP/1.1 401 Unauthorized');
+	header('WWW-Authenticate: Basic realm="The Social Site"');
+	exit("Здесь нужно указать верные имя пользователя и пароль.");
+}
+
+-------------------------------------------------
+Обработка в случае ошибки подключения:
+
+if (!mysql_connect(DB_HOST, DB_USERNAME, DB_PASSWORD))
+{
+	$user_error_message = "возникла проблема, связанная с подключением к БД, содержащей нужную информацию.";
+	$system_error_message = mysql_error();
+	header("Location: ../scripts/show_error.php?error_message={$user_error_message}&system_error_message={$system_error_message}");
+	exit();
+}
+
+-------------------------------------------------
+function handle_error($user_error_message, $system_error_message)
+{
+	header("Location: show_error.php?error_message={$user_error_message}&system_error_message={$system_error_message}");
+	exit();
+}
+
+
+
+
+
++=================================+
+|    ПОДКЛЮЧЕНИЕ К БД [mysqli]    |
++=================================+
+
+$con = new mysqli("HOST", "root", "pass", "mydb");
+$con -> query ("SET NAMES 'utf8'");
+$con -> query ("INSERT INTO 'mydb' ('name', 'pass', 'sex', 'age') values ('Vladimir', '".md5("secretpassword")."', '".time()."') ")
+$con -> close();
+__________________________________________________________________________________
+
+// 1. Создадим соединение
+$connection = mysqli_connect("localhost", "user", "pass", "dbname");
+// проверим на ошибки
+if(mysqli_connect_errno()) {
+	die("Database connection failed: ". mysqli_connect_error() . "(" . mysqli_connect_errno() . ")");
+}
+-------------------------------------------------
+// 2. Выполнить запрос к БД
+$query = "SELECT * FROM subjects";
+$result = mysqli_query($connection, $query);
+-------------------------------------------------
+// 3 . Исп. возвращенные данные
+	// возьми первый ряд из $result и привяжи его к $row
+	// когда ничего не останется, $row присвоится null, и цикл завершится
+	// так мы работаем с набором результатов mysql. Это потому, что выборка из ряда передвигает курсор []. У PHP нет возможности из ряда передвигать курсор массива, исп. обычный PHP цикл, т.к. это не PHP-массив - это результирующее множество mysql.
+	mysqli_fetch_row() передвигает курсор за нас. Нам нужно лишь продолжать выборку, вытаскивая 1 ряд за другим. И каждый раз, когда вытаскиваем ряд, курсор массива передвигается по множеству к след. ряду.
+while($row = mysqli_fetch_assoc($result)) {
+	echo $row['id']."<br>";
+	echo $row['menu_name']."<br>";
+	?>
+	<li><?=$row['visible']; ?><li>
+}
+-------------------------------------------------
+// 4. Отпустить возвращенные данные, после работы с ними. Отпускаем ресурс, чтобы MySQL мог делать с ним другие операции
+mysqli_free_result($result);
+-------------------------------------------------
+// 5. Завершаем соединение. $connection можно не указывать - и так поймет
+mysqli_close($connection);
+
+__________________________________________________________________________________
+
+$conn = new mysqli($host, $user, $pass, $db);
+if($conn->connect_error) die('Connection failed: ' . $conn->connect_error);
+$sql = "CREATE DATABASE testDB";
+if($conn->query($sql) === true) {
+	echo "Database created!";
+} else {
+	echo "Error";
+}
+___________________________________________________________________________
+
+ПОДКЛЮЧЕНИЕ К БД И ПЕРВЫЙ SQL-ЗАПРОС
+
+// database.php - файл, кот. хотим подключить.
+	$link = mysqli_connect('localhost', 'root', '', 'my_first_blog');
+	if (!mysqli_connect_errno()) {   // проверка на ошибки
+		echo 'Ошибка подключения к БД ('.mysqli_connect_errno().')';
+	}
+// index.php - файл, к кот. подключаемся.
+	require_once 'app/include/database.php';  // подключаем внешний файл
+___________________________________________________________________________
+
+ПОДКЛЮЧЕНИЕ К БД
+	$mysql = new mysqli ("localhost", "user", "password", "mydb");
+	// тоже важная строка - указание кодировки
+	$mysqli->query("SET NAMES 'utf-8' ");
+	// открывая соединение, мы должны его закрывать. Иначе, подключившийся пользователь, будучи уже неактивным, продолжит восприниматься сервером, как посылающий запросы к БД. Много "висящих" пользователей создают нагрузку на сервер.
+	$mysqli->close();
+Запрос на добавление строки:
+	$success = $mysqli->query (" INSERT INTO `users` (`login`, `password`, `reg_date`) VALUES ('user', ' ".md5("pass")." ', ' ".time()." ' ) ");
+	echo $success;	// 1 - все получилось
+Запрос на обновление значения ячейки:
+	UPDATE `mydb`.`users` SET `reg_date`='123' WHERE `users`.`id`=4;
+	// Поскольку в query() мы уже указали имя БД, > можно не указывать
+	UPDATE `users` SET `reg_date`='123' WHERE `users`.`id`=4;
+	// Поскольку уже указали имя таблицы, можно уже не указывать
+	UPDATE `users` SET `reg_date`='123' WHERE `id`=4;
+	// без WHERE значение '123' занесется во все ячейки
+Запрос на обновление неск. ячеек:
+	UPDATE `users` SET `reg_date`='10' WHERE `login`='shop' OR (`id`>4 AND `id`<8);
+Запрос на удаление ячейки:
+	DELETE FROM `users` WHERE `id`>5 AND `id`<7;
+Запрос на вывод данных:
+	SELECT `id`, `login` FROM `users`;	// выведет содержимое всех столбцов id и log
+	Array([id]=>1 [login]=123)
+
+	function print_result ($result_set) {
+		while (($row = $result_set->fetch_assoc()) !=false) {
+			print_r ($row);
+			echo $row["login"];
+		}
+		echo "Количество записей = ".$result_set->num_rows."<br>";
+	}
+
+Расширенный запрос:
+	SELECT * FROM `users` WHERE `id`<8 ORDER BY `id` ASC LIMIT 0, 10;
+	// LIMIT a, b - где a - с какой записи начать выборку, b - сколько показать
+Узнать количество элементов в толбце:
+	SELECT * COUNT(`id`) FROM `users`
+
+___________________________________________________________________________
+
+mysqli_fetch_row() - возвращает ряд данных и привязывает их к обычному []. Ключами к каждой из колонок будут целые числа. Если нам надо menu_name, то запрашиваем, что в колонке 1 (первая позиция в []).
+mysqli_fetch_assoc() - то же самое, но результат будет возвращен в ассоциативном []. Ключами будут названия колонок.
+mysqli_fetch_array() - то же, но результат либо в обычном, либо в аcсоц. либо оба [].
+mysqli_fetch_object() - вытаскиваем данные и заполняем ими {}.
+mysqli_insert_id() - просим mysql вставить запись без указания id (mysql приэтом исп. автоприращение)
+mysqli_real_escape_string($connection, $menu_name) - экранирование строк для MySQL.
+
+
++==============================+
+|    ПОДКЛЮЧЕНИЕ К БД [PDO]    |
++==============================+
+
+<i>  MySQL — отдельная от веб-сервера часть ПО и работаеи сама по себе. Он может генерировать внутренние ошибки, о кот. сообщает серверу посредством исключений, кот. выбрасывает при выполнении невыполнимых задач. Мы должны их перехватывать и обрабатывать.
+<i> PHP автоматически разрывает соединение. Писать "$pdo = null;" ни к чему.
+<i> Запросы, содержащие SELECT, выводят хранящуюся в БД инфу в форме {} PDOStatement (результирующего набора).
+
+<?php
+try {
+	$pdo = new PDO('mysql:host=localhost;dbname=mydb', 'user', 'pass');  // (1)
+	$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);    // (2)
+	$pdo->exec('SET NAMES "utf8"');
+
+	$affectedRows = $pdo->exec('CREATE TABLE joke (...)');      // (3)
+
+	$result = $pdo->query('SELECT joketext FROM joke');      // (4)
+
+	while ($row = $result->fetch()) {      // (5)
+	// лучше "foreach ($result as $row)"
+		$jokes[] = $row['joketext'];        // (6)
+	}
+} catch (PDOException $e) {
+	$output = 'Текст для пользователя' . $е->getMessage();
+	include 'output.html.php';    // подключаем документ, где отобразим текст ошибки
+	exit();  // скрипт тут же закончит работу, оставшийся код выполнен не будет
+}
+$output = 'Соединение с базой данных установлено.';
+include 'output.html.php';
+?>
+
+(1) new PDO возвращает объект PDO, который определяет установленное соединение.
+(2) {} PDOException — разновидность исключений, которую выбрасывает new PDO. "PDO::" указывает, что константы не встроены в PHP, а часть класса PDO. Строка говорит, что вы хотите задать атрибуту, управляющему выводом ошибок, режим выброса исключений.
+(3) exec вернет кол-во преобразованных строк.
+(4) query возвращает {} PDOStatement,  который представляет результирующий набор (список всех строк, полученных в результате запроса)
+(5) fetch возвращает строки результирующего набора в виде ассоциативного []. Когда строки закончатся - return false.
+(6) $row присваивается выражение целиком, поэтому его можно исп. как условие while. Цикл продолжается пока $row != false. В итоге, кол-во итераций = кол-во строк. При этом $row каждый раз будет принимать значение -> строки.
+
+--------------------
+
+Параметризированный SQL-запрос - отправленный серверу БД заранее, чтобы  подготовить  его  к  выполнению  дальнейших команд  (непосредственного  выполнения не  происходит). Такой  код  содержит  псевдопеременные (:$),  которые  при формировании  настоящего  запроса  заменяются  нужными  значениями. В процессе подстановки {} PDO автоматически защитит от «опасных» символов.
+
+$sql = 'INSERT INTO joke SET
+	joketext = :joketext,
+	jokedate = CURDATE()';
+$s = $pdo->prepare($sql);  // подготовка MySQL к -> выполнению команд
+$s->bindValue(':joketext', $_POST['joketext']);
+$s->execute();
+
+Из {} PDO ($pdo) вызывается prepare(). Он направляет запрос серверу MySQL, чтобы подготовить его к -> выполнению команд. MySQL пока не в состоянии обработать запрос — ему не хватает значения для столбца joketext. prepare возвращает {} PDOStatement и сохраняет его в $s.
+Теперь, когда MySQL-сервер готов к выполнению запроса, ему можно отправить пропущенные значения (1 или >), вызвав bindValue из {} PDOStatement (данный метод вызывается при передаче каждого значения). В качестве аргумента, кроме самого значения $_POST['joketext'], ему передается псевдо-$ :joketext, которую необходимо заменить. Сервер MySQL знает, что он получает содержимое отдельных $, а не SQL-код. ->, исчезает риск того, что отправленные символы интерпретируются как команды на языке SQL.  Таким  образом,  использование  параметризированных  запросов  исключает уязвимости, связанные с внедрением SQL-кода.
+В завершение из {} PDOStatement вызывается execute(), чтобы сервер MySQL смог выполнить запрос с теми значениями, которые ему предоставили.
+
+$_SERVER['PHP_SELF'] - АДРЕС URL ТЕКУЩЕЙ СТРАНИЦЫ
+__________________________________________________________________________________
+
+try {
+	$conn = new PDO('mysql:host=localhost; dbname=myDB', 'root', 'pass');
+	echo 'Connection successfully!';
+} catch (PDOException $e) {
+	echo 'Connection failed: ' . $e.getMessage();
+}
+__________________________________________________________________________________
+
+$host = '127.0.0.1';
+$db   = 'test';
+$user = 'root';
+$pass = '';
+$charset = 'utf8';
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$opt = [
+	PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+	PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+	PDO::ATTR_EMULATE_PREPARES   => false,
+];
+$pdo = new PDO($dsn, $user, $pass, $opt);
